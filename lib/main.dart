@@ -1,3 +1,4 @@
+import 'package:authpage/Screens/Signup/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:authpage/Screens/Welcome/welcome_screen.dart';
 import 'package:authpage/Screens/Login/login_screen.dart';
@@ -48,8 +49,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const WelcomeScreen(),
         '/login': (context) => const LoginScreen(),
-        '/reset-password-request': (context) =>
-            const RequestResetPasswordScreen(),
+        '/register': (context) => const SignUpScreen(),
+        '/reset-password-request': (context) => const RequestResetPasswordScreen(),
         '/reset-password': (context) => const ResetPasswordScreen(),
         '/home': (context) => const HomePage(),
       },

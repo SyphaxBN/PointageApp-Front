@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:authpage/services/api_service.dart';
 
 class RequestResetPasswordScreen extends StatefulWidget {
@@ -33,16 +34,8 @@ class _RequestResetPasswordScreenState
       });
 
       String message = response.data["message"] ?? "";
-      // On récupère la valeur d'erreur en s'assurant qu'elle soit traitée comme booléen
-      bool errorFlag;
-      if (response.data["error"] is bool) {
-        errorFlag = response.data["error"];
-      } else {
-        errorFlag = response.data["error"].toString().toLowerCase() != "false";
-      }
+      bool errorFlag = response.data["error"] == true;
 
-      // Si tout est OK (status code 200/201 et pas d'erreur) OU si le message indique
-      // qu'une demande est déjà en cours, on navigue vers l'écran de réinitialisation.
       if ((response.statusCode == 200 || response.statusCode == 201) &&
           !errorFlag) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -51,16 +44,6 @@ class _RequestResetPasswordScreenState
                 ? message
                 : "Email envoyé ! Vérifiez votre boîte de réception."),
             backgroundColor: Colors.green,
-          ),
-        );
-        if (!mounted) return;
-        Navigator.pushReplacementNamed(context, "/reset-password");
-      } else if (message.contains("déjà en cours")) {
-        // Même si errorFlag est true, on souhaite naviguer vers l'écran de réinitialisation.
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: Colors.orange,
           ),
         );
         if (!mounted) return;
@@ -96,28 +79,96 @@ class _RequestResetPasswordScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Mot de passe oublié")),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-                "Entrez votre email pour recevoir un token de réinitialisation."),
-            const SizedBox(height: 20),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: "Email"),
+      backgroundColor: const Color(0xFFE6F0FA), // Bleu très clair
+      body: Stack(
+        children: [
+          Positioned(
+            top: -10,
+            left: -85,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: const BoxDecoration(
+                color: Color(0xFFB3DAF1), // Bleu clair
+                shape: BoxShape.circle,
+              ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: isLoading ? null : _requestReset,
-              child: isLoading
-                  ? const CircularProgressIndicator()
-                  : const Text("Envoyer un email"),
+          ),
+          Positioned(
+            top: -100,
+            left: -8,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: const BoxDecoration(
+                color: Color(0xFF80C7E8), // Bleu plus foncé
+                shape: BoxShape.circle,
+              ),
             ),
-          ],
-        ),
+          ),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    'assets/images/forgotpass.svg',
+                    height: 180,
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Entrer votre email pour recevoir un token de réinitialisation",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      hintText: "Email",
+                      prefixIcon: const Icon(Icons.email,
+                          color: Color(0xFF3498DB)), // Icône email ajoutée
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 15, horizontal: 20),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : _requestReset,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF3498DB),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              "Envoyer un Email",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

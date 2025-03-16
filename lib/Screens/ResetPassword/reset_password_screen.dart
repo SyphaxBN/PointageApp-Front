@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:authpage/services/api_service.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
@@ -68,45 +69,102 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Réinitialisation du mot de passe")),
-      body: Center(
-        // <-- Ajout de Center
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment:
-                MainAxisAlignment.center, // <-- Centre verticalement
-            crossAxisAlignment:
-                CrossAxisAlignment.center, // <-- Centre horizontalement
-            mainAxisSize: MainAxisSize
-                .min, // <-- Ajuste la taille de la colonne au contenu
-            children: [
-              TextField(
-                controller: tokenController,
-                decoration: const InputDecoration(labelText: "Token"),
+      backgroundColor: const Color(0xFFE6F0FA),
+      body: Stack(
+        children: [
+          Positioned(
+            top: -10,
+            left: -85,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: const BoxDecoration(
+                color: Color(0xFFB3DAF1),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: passwordController,
-                decoration:
-                    const InputDecoration(labelText: "Nouveau mot de passe"),
-                obscureText: true,
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: confirmPasswordController,
-                decoration: const InputDecoration(
-                    labelText: "Confirmer le mot de passe"),
-                obscureText: true,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _resetPassword,
-                child: const Text("Réinitialiser le mot de passe"),
-              ),
-            ],
+            ),
           ),
+          Positioned(
+            top: -100,
+            left: -8,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: const BoxDecoration(
+                color: Color(0xFF80C7E8),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    'assets/images/notifpass.svg',
+                    height: 180,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildTextField(tokenController, "Token",
+                      icon: Icons.vpn_key),
+                  const SizedBox(height: 10),
+                  _buildTextField(passwordController, "Nouveau mot de passe",
+                      isPassword: true, icon: Icons.lock),
+                  const SizedBox(height: 10),
+                  _buildTextField(confirmPasswordController,
+                      "Confirmer le nouveau mot de passe",
+                      isPassword: true, icon: Icons.lock_outline),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _resetPassword,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4A90E2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 40),
+                    ),
+                    child: const Text(
+                      "Réinitialiser le mot de passe",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String hintText,
+      {bool isPassword = false, IconData? icon}) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword,
+      decoration: InputDecoration(
+        hintText: hintText,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide.none,
         ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        prefixIcon: icon != null
+            ? Icon(
+                icon,
+                color: const Color(0xFF3498DB),
+              )
+            : null,
       ),
     );
   }
