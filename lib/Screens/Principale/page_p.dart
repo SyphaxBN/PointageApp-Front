@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:authpage/constants.dart';
 import 'package:authpage/services/api_service.dart';
 import 'package:authpage/services/storage_service.dart';
 import 'package:authpage/services/attendance_service.dart';
@@ -14,17 +13,20 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   String userName = "Chargement...";
-  List<Map<String, dynamic>> attendanceHistory = [];
+  String clockInTime = "--:--";
+  String clockOutTime = "Not yet";
+  String lastLocation = "Localisation inconnue";
+  String todayDate = "Chargement...";
 
   @override
   void initState() {
     super.initState();
-    fetchUserName();
-    fetchAttendanceHistory();
+    fetchUserData();
   }
 
-  Future<void> fetchUserName() async {
+  Future<void> fetchUserData() async {
     String? name = await StorageService.getUserName();
+
     if (name == null) {
       final apiService = ApiService();
       final user = await apiService.getUser();
@@ -33,28 +35,49 @@ class HomePageState extends State<HomePage> {
         await StorageService.saveUserName(name!);
       }
     }
-    if (mounted) {
-      setState(() {
-        userName = name ?? "Utilisateur";
-      });
-    }
+
+    // 🔵 Appel API pour récupérer le dernier pointage
+    final lastAttendance = await AttendanceService.getLastAttendance();
+
+    print(
+        "🔵 Réponse API getLastAttendance: $lastAttendance"); // 🔥 Vérification des données reçues
+
+    // ✅ Vérifie si les données sont bien mises à jour
+    setState(() {
+      userName = name ?? "Utilisateur";
+      todayDate = formatDate(DateTime.now());
+
+      if (lastAttendance != null) {
+        clockInTime = lastAttendance["clockIn"] ?? "--:--";
+        clockOutTime = lastAttendance["clockOut"] ?? "Not yet";
+        lastLocation = lastAttendance["location"] ?? "Localisation inconnue";
+
+        print(
+            "🟢 Mise à jour UI - clockIn: $clockInTime, clockOut: $clockOutTime, location: $lastLocation"); // ✅ Debug UI
+      }
+    });
   }
 
-  Future<void> fetchAttendanceHistory() async {
-    final history = await AttendanceService.getAttendanceHistory();
-    debugPrint("Historique récupéré: $history"); // Ajoute cette ligne
+  String formatDate(DateTime date) {
+    return "${date.day} ${getMonthName(date.month)}, ${date.year}";
+  }
 
-    if (mounted) {
-      setState(() {
-        attendanceHistory = history.map((record) {
-          return {
-            "type": record["type"] ?? "Inconnu",
-            "time": record["time"] ?? "Heure inconnue",
-            "location": record["location"] ?? "Localisation inconnue"
-          };
-        }).toList();
-      });
-    }
+  String getMonthName(int month) {
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ];
+    return months[month - 1];
   }
 
   Future<void> requestLocationPermission() async {
@@ -90,7 +113,8 @@ class HomePageState extends State<HomePage> {
     }
 
     return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+      desiredAccuracy: LocationAccuracy.high, // Assure une meilleure précision
+    );
   }
 
   Future<void> handleClockIn() async {
@@ -98,18 +122,18 @@ class HomePageState extends State<HomePage> {
     Position? position = await getCurrentLocation();
     if (position == null) return;
 
+    print(
+        "📍 Tentative de pointage avec : Latitude: ${position.latitude}, Longitude: ${position.longitude}");
+
     bool success =
         await AttendanceService.clockIn(position.latitude, position.longitude);
     if (success) {
-      await fetchAttendanceHistory();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Pointage d'arrivée réussi!")),
-        );
-      }
-    } else {
+      await Future.delayed(const Duration(
+          seconds:
+              2)); // ⚡ Donne un petit délai avant de récupérer les nouvelles données
+      await fetchUserData();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Erreur lors du pointage.")),
+        const SnackBar(content: Text("Pointage d'arrivée réussi!")),
       );
     }
   }
@@ -122,15 +146,9 @@ class HomePageState extends State<HomePage> {
     bool success =
         await AttendanceService.clockOut(position.latitude, position.longitude);
     if (success) {
-      await fetchAttendanceHistory();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Pointage de départ réussi!")),
-        );
-      }
-    } else {
+      await fetchUserData();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Erreur lors du pointage.")),
+        const SnackBar(content: Text("Pointage de départ réussi!")),
       );
     }
   }
@@ -138,83 +156,139 @@ class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Accueil"),
-        backgroundColor: kPrimaryColor,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  userName,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-                const SizedBox(height: 2),
-                const Text(
-                  "Employé",
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontStyle: FontStyle.italic,
-                      color: Colors.white),
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: const Color(0xFFE6F0FA),
+      body: SafeArea(
+        child: Stack(
           children: [
-            Text(
-              "Bienvenue, $userName!",
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Positioned(
+              top: -10,
+              left: -85,
+              child: Container(
+                width: 180,
+                height: 180,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFB3DAF1),
+                  shape: BoxShape.circle,
+                ),
+              ),
             ),
-            const SizedBox(height: 20),
-            Center(
+            Positioned(
+              top: -100,
+              left: -8,
+              child: Container(
+                width: 180,
+                height: 180,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF80C7E8),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ElevatedButton(
-                    onPressed: handleClockIn,
-                    child: const Text("Pointer mon arrivée"),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(userName,
+                              style: const TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold)),
+                          const Text("employé",
+                              style:
+                                  TextStyle(fontSize: 14, color: Colors.grey)),
+                        ],
+                      ),
+                      const CircleAvatar(
+                        radius: 24,
+                        backgroundColor: Colors.blueAccent,
+                        child:
+                            Icon(Icons.person, color: Colors.white, size: 30),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: handleClockOut,
-                    child: const Text("Pointer mon départ"),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Bienvenue chez Beko, $userName!",
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text("Today's status",
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
+                            Text(todayDate,
+                                style: const TextStyle(
+                                    fontSize: 14, color: Colors.grey)),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text("Clock in",
+                                    style: TextStyle(fontSize: 14)),
+                                Text(clockInTime,
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blue)),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text("Clock Out",
+                                    style: TextStyle(fontSize: 14)),
+                                Text(clockOutTime,
+                                    style: const TextStyle(
+                                        fontSize: 16, color: Colors.grey)),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: handleClockIn,
+                          child: const Text("Clock In"),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: handleClockOut,
+                          child: const Text("Clock Out"),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 30),
-            const Text("Historique des pointages",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            Expanded(
-              child: attendanceHistory.isEmpty
-                  ? const Center(child: Text("Aucun pointage enregistré."))
-                  : ListView.builder(
-                      itemCount: attendanceHistory.length,
-                      itemBuilder: (context, index) {
-                        final record = attendanceHistory[index];
-                        return ListTile(
-                          title: Text(
-                            "${record['type'] ?? 'Inconnu'} à ${record['time'] ?? 'Heure inconnue'}",
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                          subtitle: Text(
-                            "Localisation: ${record['location'] ?? 'Localisation inconnue'}",
-                            style: const TextStyle(
-                                fontSize: 14, color: Colors.grey),
-                          ),
-                        );
-                      },
-                    ),
             ),
           ],
         ),

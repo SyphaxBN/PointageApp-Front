@@ -113,24 +113,39 @@ class AttendanceService {
     }
   }
 
-  /// Supprime tout l'historique des pointages
-  // static Future<bool> clearAttendanceHistory() async {
-    // try {
-      // String? token = await StorageService.getToken();
-      // if (token == null || token.isEmpty) {
-      //   throw Exception("Token non disponible");
-      // }
-      // final response = await http.delete(
-        // Uri.parse('$baseUrl/history'),
-        // headers: {
-          // 'Authorization': 'Bearer $token',
-        // },
-      // );
-      // print("Réponse API (suppression historique): ${response.body}"); // Debug
-      // return response.statusCode == 200;
-    // } catch (e) {
-      // print("Erreur de suppression : $e");
-      // return false;
-    // }
-  // }
+  /// 📌 Récupère le dernier pointage de l'utilisateur connecté
+  static Future<Map<String, dynamic>?> getLastAttendance() async {
+    try {
+      String? token = await StorageService.getToken();
+      if (token == null || token.isEmpty) {
+        print("ERREUR: Token non disponible !");
+        return null;
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/last'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(
+          "🔵 Réponse API getLastAttendance: ${response.body}"); // 🔍 Debug API
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        print("✅ Dernier pointage récupéré: $jsonResponse");
+        return jsonResponse;
+      } else if (response.statusCode == 404) {
+        print("⚠️ Aucun pointage trouvé.");
+        return null;
+      } else {
+        print("Erreur API getLastAttendance: ${response.body}");
+        return null;
+      }
+    } catch (e) {
+      print("Erreur lors de la récupération du dernier pointage: $e");
+      return null;
+    }
+  }
 }
