@@ -27,7 +27,8 @@ class HomePageState extends State<HomePage> {
   Future<void> fetchUserData() async {
     String? name = await StorageService.getUserName();
 
-    if (name == null) {
+    if (name == null || name.isEmpty) {
+      // 🔹 Vérifie que le nom est bien récupéré
       final apiService = ApiService();
       final user = await apiService.getUser();
       if (user != null && user.containsKey("name")) {
@@ -36,24 +37,21 @@ class HomePageState extends State<HomePage> {
       }
     }
 
-    // 🔵 Appel API pour récupérer le dernier pointage
     final lastAttendance = await AttendanceService.getLastAttendance();
+    print("🔍 Vérification de lastAttendance : $lastAttendance");
 
-    print(
-        "🔵 Réponse API getLastAttendance: $lastAttendance"); // 🔥 Vérification des données reçues
-
-    // ✅ Vérifie si les données sont bien mises à jour
     setState(() {
       userName = name ?? "Utilisateur";
       todayDate = formatDate(DateTime.now());
 
       if (lastAttendance != null) {
-        clockInTime = lastAttendance["clockIn"] ?? "--:--";
-        clockOutTime = lastAttendance["clockOut"] ?? "Not yet";
+        clockInTime = lastAttendance["clockInTime"] ?? "--:--";
+        clockOutTime = lastAttendance["clockOutTime"] ?? "Pas encore";
         lastLocation = lastAttendance["location"] ?? "Localisation inconnue";
-
-        print(
-            "🟢 Mise à jour UI - clockIn: $clockInTime, clockOut: $clockOutTime, location: $lastLocation"); // ✅ Debug UI
+      } else {
+        clockInTime = "--:--";
+        clockOutTime = "Pas encore";
+        lastLocation = "Aucune donnée disponible";
       }
     });
   }
@@ -95,9 +93,8 @@ class HomePageState extends State<HomePage> {
     if (permission == LocationPermission.deniedForever) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content:
-              Text("Veuillez activer la localisation dans les paramètres."),
-        ),
+            content:
+                Text("Veuillez activer la localisation dans les paramètres.")),
       );
       return;
     }
@@ -113,44 +110,81 @@ class HomePageState extends State<HomePage> {
     }
 
     return await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high, // Assure une meilleure précision
+      desiredAccuracy: LocationAccuracy.high,
     );
   }
 
-  Future<void> handleClockIn() async {
-    await requestLocationPermission();
-    Position? position = await getCurrentLocation();
-    if (position == null) return;
-
-    print(
-        "📍 Tentative de pointage avec : Latitude: ${position.latitude}, Longitude: ${position.longitude}");
-
-    bool success =
-        await AttendanceService.clockIn(position.latitude, position.longitude);
-    if (success) {
-      await Future.delayed(const Duration(
-          seconds:
-              2)); // ⚡ Donne un petit délai avant de récupérer les nouvelles données
-      await fetchUserData();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Pointage d'arrivée réussi!")),
-      );
+  Future<void> ensureLocationServiceEnabled() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      await Geolocator.openLocationSettings();
     }
   }
 
-  Future<void> handleClockOut() async {
+  Future<void> handleClockIn() async {
+    print("🚀 Début du pointage d'arrivée");
+    await ensureLocationServiceEnabled();
     await requestLocationPermission();
     Position? position = await getCurrentLocation();
-    if (position == null) return;
+    if (position == null) {
+      print("⚠️ Impossible d'obtenir la position");
+      return;
+    }
+
+    print("📍 Position actuelle : ${position.latitude}, ${position.longitude}");
+
+    bool success =
+        await AttendanceService.clockIn(position.latitude, position.longitude);
+    print(success
+        ? "✅ Pointage d'arrivée réussi"
+        : "❌ Pointage d'arrivée échoué");
+
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Vous êtes trop loin du lieu de pointage !")),
+      );
+      return;
+    }
+
+    await fetchUserData();
+    print("🔄 Données utilisateur mises à jour après pointage d'arrivée");
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Pointage d'arrivée réussi!")),
+    );
+  }
+
+  Future<void> handleClockOut() async {
+    print("🚀 Début du pointage de départ");
+    await ensureLocationServiceEnabled();
+    await requestLocationPermission();
+    Position? position = await getCurrentLocation();
+    if (position == null) {
+      print("⚠️ Impossible d'obtenir la position");
+      return;
+    }
+
+    print("📍 Position actuelle : ${position.latitude}, ${position.longitude}");
 
     bool success =
         await AttendanceService.clockOut(position.latitude, position.longitude);
-    if (success) {
-      await fetchUserData();
+    print(success
+        ? "✅ Pointage de départ réussi"
+        : "❌ Pointage de départ échoué");
+
+    if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Pointage de départ réussi!")),
+        const SnackBar(
+            content: Text("Vous êtes trop loin du lieu de pointage !")),
       );
+      return;
     }
+
+    await fetchUserData();
+    print("🔄 Données utilisateur mises à jour après pointage de départ");
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Pointage de départ réussi!")),
+    );
   }
 
   @override
@@ -195,7 +229,7 @@ class HomePageState extends State<HomePage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(userName,
+                          Text(userName, // ✅ Nom correctement mis à jour
                               style: const TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.bold)),
                           const Text("employé",
@@ -213,7 +247,7 @@ class HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    "Bienvenue chez Beko, $userName!",
+                    "Bienvenue chez Beko, $userName!", // ✅ Correction affichage du nom
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.w500),
                   ),
@@ -230,9 +264,17 @@ class HomePageState extends State<HomePage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text("Today's status",
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold)),
+                            Row(
+                              children: [
+                                const Icon(Icons.calendar_today,
+                                    color: Colors.blue),
+                                const SizedBox(width: 5),
+                                const Text("Status d'Aujourd'hui",
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold)),
+                              ],
+                            ),
                             Text(todayDate,
                                 style: const TextStyle(
                                     fontSize: 14, color: Colors.grey)),
@@ -245,8 +287,15 @@ class HomePageState extends State<HomePage> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("Clock in",
-                                    style: TextStyle(fontSize: 14)),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.access_time,
+                                        color: Colors.green),
+                                    const SizedBox(width: 5),
+                                    const Text("Arrivée",
+                                        style: TextStyle(fontSize: 14)),
+                                  ],
+                                ),
                                 Text(clockInTime,
                                     style: const TextStyle(
                                         fontSize: 18,
@@ -257,12 +306,38 @@ class HomePageState extends State<HomePage> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("Clock Out",
-                                    style: TextStyle(fontSize: 14)),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.access_time,
+                                        color: Colors.orange),
+                                    const SizedBox(width: 5),
+                                    const Text("Départ",
+                                        style: TextStyle(fontSize: 14)),
+                                  ],
+                                ),
                                 Text(clockOutTime,
                                     style: const TextStyle(
                                         fontSize: 16, color: Colors.grey)),
                               ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10), // 🔹 Ajout d'un espacement
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on, color: Colors.red),
+                            const SizedBox(width: 5),
+                            Flexible(
+                              child: Text(
+                                lastLocation.isNotEmpty
+                                    ? lastLocation
+                                    : "Localisation inconnue",
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w500),
+                                softWrap: true,
+                                overflow: TextOverflow
+                                    .visible, // Permet d'afficher tout le texte
+                              ),
                             ),
                           ],
                         ),
@@ -275,14 +350,14 @@ class HomePageState extends State<HomePage> {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: handleClockIn,
-                          child: const Text("Clock In"),
+                          child: const Text("Arrivée"),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: ElevatedButton(
                           onPressed: handleClockOut,
-                          child: const Text("Clock Out"),
+                          child: const Text("Départ"),
                         ),
                       ),
                     ],

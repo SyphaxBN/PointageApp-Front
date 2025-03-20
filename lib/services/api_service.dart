@@ -5,6 +5,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   final Dio dio = Dio(
       BaseOptions(baseUrl: "http://10.0.2.2:8000")); // Pour l'émulateur Android
+  // final Dio dio = Dio(BaseOptions(
+  // baseUrl:
+  // "http://192.168.1.7:8000") // Remplace par l'IP de ton PC ou par localhost
+  // );
 
   ApiService() {
     _initializeInterceptors();
@@ -15,10 +19,7 @@ class ApiService {
 
     if (token != null) {
       dio.options.headers["Authorization"] = "Bearer $token";
-      print("Token chargé dans ApiService : $token"); // 🔍 Debug
-    } else {
-      print("Aucun token trouvé dans StorageService !");
-    }
+    } else {}
   }
 
   Future<Response> post(String endpoint, Map<String, dynamic> data) async {
@@ -44,16 +45,17 @@ class ApiService {
 
   Future<Map<String, dynamic>?> getUser() async {
     try {
-      final response = await dio.get("/auth");
+      final token = await StorageService.getToken();
 
-      print("Réponse API getUser(): ${response.data}"); // 🔍 Debug
+      final response = await dio.get(
+        "/auth",
+        options: Options(headers: {"Authorization": "Bearer $token"}),
+      );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && response.data != null) {
         return response.data;
-      }
-    } catch (e) {
-      print("Erreur getUser() : $e");
-    }
+      } else {}
+    } catch (e) {}
     return null;
   }
 }

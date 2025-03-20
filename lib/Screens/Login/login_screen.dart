@@ -54,7 +54,13 @@ class LoginScreenState extends State<LoginScreen> {
         await StorageService.saveToken(response.data["access_token"]);
 
         Future.delayed(const Duration(seconds: 1), () {
-          Navigator.pushNamed(context, '/home');
+          Navigator.pushReplacementNamed(context, '/home');
+          // Navigator.pushNamedAndRemoveUntil(
+          // context,
+          // '/home',
+          // (Route<dynamic> route) =>
+          // false, // Supprime toutes les routes précédentes ( Attention aux crashs sur l'émulateur Android Studio )
+          // );
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -83,14 +89,13 @@ class LoginScreenState extends State<LoginScreen> {
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             _getScreenFromRoute(route),
-        transitionsBuilder:
-            (context, animation, secondaryAnimation, child) {
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
           const begin = Offset(1.0, 0.0);
           const end = Offset.zero;
           const curve = Curves.easeInOut;
 
-          var tween = Tween(begin: begin, end: end)
-              .chain(CurveTween(curve: curve));
+          var tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
           return SlideTransition(
             position: animation.drive(tween),
@@ -202,7 +207,8 @@ class LoginScreenState extends State<LoginScreen> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () => _navigateWithAnimation('/reset-password-request'),
+                      onPressed: () =>
+                          _navigateWithAnimation('/reset-password-request'),
                       child: const Text(
                         "Mot de passe oublié ?",
                         style: TextStyle(
@@ -217,7 +223,9 @@ class LoginScreenState extends State<LoginScreen> {
                     onPressed: isLoading ? null : _login,
                     child: isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Se connecter", style: TextStyle(color: Colors.white, fontSize: 18)),
+                        : const Text("Se connecter",
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 18)),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -226,7 +234,10 @@ class LoginScreenState extends State<LoginScreen> {
                       const Text("Pas encore de compte ? "),
                       GestureDetector(
                         onTap: () => _navigateWithAnimation('/register'),
-                        child: const Text("S'inscrire", style: TextStyle(color: Color(0xFF007BFF), fontWeight: FontWeight.bold)),
+                        child: const Text("S'inscrire",
+                            style: TextStyle(
+                                color: Color(0xFF007BFF),
+                                fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),

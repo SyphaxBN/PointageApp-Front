@@ -21,7 +21,6 @@ class AttendanceService {
     try {
       String? token = await StorageService.getToken();
       if (token == null || token.isEmpty) {
-        print("ERREUR: Token non disponible !");
         return false;
       }
 
@@ -37,16 +36,12 @@ class AttendanceService {
         }),
       );
 
-      print("Réponse de l'API ($type): ${response.body}"); // 🔍 Debug API
-
       if (response.statusCode == 201) {
         return true;
       } else {
-        print("Erreur de pointage: ${response.body}");
         return false;
       }
     } catch (e) {
-      print("Erreur lors du pointage : $e");
       return false;
     }
   }
@@ -65,9 +60,6 @@ class AttendanceService {
           'Authorization': 'Bearer $token',
         },
       );
-
-      print(
-          "Réponse brute de l'API (historique): ${response.body}"); // 🔍 Debug
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonResponse = jsonDecode(response.body);
@@ -98,17 +90,14 @@ class AttendanceService {
         }
 
         // 🔍 Affichage des données après traitement
-        for (var record in parsedResponse) {
-          print("Pointage traité : $record");
-        }
+        // ignore: unused_local_variable
+        for (var record in parsedResponse) {}
 
         return parsedResponse;
       } else {
-        print("Erreur API: ${response.body}");
         return [];
       }
     } catch (e) {
-      print("Erreur: $e");
       return [];
     }
   }
@@ -118,7 +107,6 @@ class AttendanceService {
     try {
       String? token = await StorageService.getToken();
       if (token == null || token.isEmpty) {
-        print("ERREUR: Token non disponible !");
         return null;
       }
 
@@ -129,22 +117,15 @@ class AttendanceService {
         },
       );
 
-      print(
-          "🔵 Réponse API getLastAttendance: ${response.body}"); // 🔍 Debug API
-
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-        print("✅ Dernier pointage récupéré: $jsonResponse");
         return jsonResponse;
       } else if (response.statusCode == 404) {
-        print("⚠️ Aucun pointage trouvé.");
         return null;
       } else {
-        print("Erreur API getLastAttendance: ${response.body}");
         return null;
       }
     } catch (e) {
-      print("Erreur lors de la récupération du dernier pointage: $e");
       return null;
     }
   }

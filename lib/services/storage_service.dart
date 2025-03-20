@@ -5,7 +5,6 @@ class StorageService {
     if (token.isNotEmpty) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', token);
-      print("Token sauvegardé : $token");
     }
   }
 
@@ -18,14 +17,11 @@ class StorageService {
   static Future<void> removeToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
-    print("Token supprimé !");
   }
 
   static Future<void> saveUserName(String name) async {
-    if (name.isNotEmpty) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('user_name', name);
-    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userName', name);
   }
 
   static Future<String?> getUserName() async {
