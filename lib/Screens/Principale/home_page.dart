@@ -13,6 +13,8 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   String userName = "Chargement...";
+  String userRole = "Chargement..."; // Ajout du rôle
+  String userPhoto = "default.png"; // Ajout de la photo
   String clockInTime = "--:--";
   String clockOutTime = "Not yet";
   String lastLocation = "Localisation inconnue";
@@ -26,14 +28,29 @@ class HomePageState extends State<HomePage> {
 
   Future<void> fetchUserData() async {
     String? name = await StorageService.getUserName();
+    String? role =
+        await StorageService.getUserRole(); // 🔹 Récupérer le rôle stocké
+    String? photo = await StorageService.getUserPhoto();
+    print("📌 Rôle récupéré du storage: $role"); // Vérifier le stockage
 
-    if (name == null || name.isEmpty) {
-      // 🔹 Vérifie que le nom est bien récupéré
+    if (name == null || name.isEmpty || role == null || role.isEmpty) {
+      // 🔹 Vérifie que le nom et le rôle sont bien récupérés
       final apiService = ApiService();
       final user = await apiService.getUser();
-      if (user != null && user.containsKey("name")) {
-        name = user["name"];
-        await StorageService.saveUserName(name!);
+      if (user != null) {
+        if (user.containsKey("name")) {
+          name = user["name"];
+          await StorageService.saveUserName(name!);
+        }
+        if (user.containsKey("role")) {
+          role = user["role"];
+          print("✅ Rôle final après API : $role"); // Vérification
+          await StorageService.saveUserRole(role!);
+        }
+        if (user.containsKey("photo")) {
+          photo = user["photo"];
+          await StorageService.saveUserPhoto(photo!);
+        }
       }
     }
 
@@ -42,6 +59,9 @@ class HomePageState extends State<HomePage> {
 
     setState(() {
       userName = name ?? "Utilisateur";
+      userRole = role ?? "Non défini"; // 🔹 Mise à jour du rôle
+      userPhoto =
+          photo ?? "default.png"; // 🔹 Utilise une image par défaut si absente
       todayDate = formatDate(DateTime.now());
 
       if (lastAttendance != null) {
@@ -224,24 +244,47 @@ class HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(userName, // ✅ Nom correctement mis à jour
-                              style: const TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold)),
-                          const Text("employé",
-                              style:
-                                  TextStyle(fontSize: 14, color: Colors.grey)),
+                          Text(
+                            userName,
+                            style: const TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            userRole,
+                            style: const TextStyle(
+                                fontSize: 14,
+                                color: Color.fromARGB(255, 75, 75, 75)),
+                          ),
                         ],
                       ),
-                      const CircleAvatar(
-                        radius: 24,
-                        backgroundColor: Colors.blueAccent,
-                        child:
-                            Icon(Icons.person, color: Colors.white, size: 30),
+                      const Spacer(), // Pousse les éléments suivants à droite
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/profile');
+                        },
+                        child: const Text(
+                          "Profile",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundImage: userPhoto.isNotEmpty
+                            ? NetworkImage("http://10.0.2.2:8000$userPhoto")
+                                as ImageProvider
+                            : null,
+                        child: userPhoto.isEmpty
+                            ? Icon(Icons.person,
+                                size: 30, color: Colors.grey[600])
+                            : null,
                       ),
                     ],
                   ),

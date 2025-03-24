@@ -53,9 +53,19 @@ class ApiService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        return response.data;
-      } else {}
-    } catch (e) {}
+        final user = response.data;
+        print("📌 Données utilisateur récupérées : $user"); // Debugging
+
+        if (user.containsKey("role")) {
+          await StorageService.saveUserRole(user["role"]); // 🔹 Stocke le rôle
+          print("✅ Rôle stocké : ${user["role"]}"); // Debugging
+        }
+
+        return user;
+      }
+    } catch (e) {
+      print("❌ Erreur dans getUser(): $e");
+    }
     return null;
   }
 }

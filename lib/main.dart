@@ -1,10 +1,11 @@
+import 'package:authpage/Screens/Principale/profile_page.dart';
 import 'package:authpage/Screens/Signup/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:authpage/Screens/Welcome/welcome_screen.dart';
 import 'package:authpage/Screens/Login/login_screen.dart';
 import 'package:authpage/Screens/ResetPassword/request_reset_password_screen.dart';
 import 'package:authpage/Screens/ResetPassword/reset_password_screen.dart';
-import 'package:authpage/Screens/Principale/page_p.dart';
+import 'package:authpage/Screens/Principale/home_page.dart';
 import 'package:authpage/constants.dart';
 
 void main() => runApp(const MyApp());
@@ -50,9 +51,11 @@ class MyApp extends StatelessWidget {
         '/': (context) => const WelcomeScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const SignUpScreen(),
-        '/reset-password-request': (context) => const RequestResetPasswordScreen(),
+        '/reset-password-request': (context) =>
+            const RequestResetPasswordScreen(),
         '/reset-password': (context) => const ResetPasswordScreen(),
         '/home': (context) => const HomePage(),
+        '/profile': (context) => const ProfilePage(),
       },
     );
   }

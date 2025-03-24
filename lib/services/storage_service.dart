@@ -34,6 +34,28 @@ class StorageService {
     await prefs.remove('user_name');
   }
 
+  static Future<void> saveUserRole(String role) async {
+    // 🔹 Sauvegarde du rôle
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userRole', role);
+  }
+
+  static Future<String?> getUserRole() async {
+    // 🔹 Récupération du rôle
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userRole');
+  }
+
+  static Future<void> saveUserPhoto(String photoUrl) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userPhoto', photoUrl);
+  }
+
+  static Future<String?> getUserPhoto() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userPhoto');
+  }
+
   static Future<void> saveUserEmail(String email) async {
     if (email.isNotEmpty) {
       final prefs = await SharedPreferences.getInstance();
