@@ -19,13 +19,41 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _register() async {
     if (isLoading) return;
 
-    if (nameController.text.isEmpty ||
-        emailController.text.isEmpty ||
-        passwordController.text.isEmpty) {
+    String name = nameController.text.trim();
+    String email = emailController.text.trim();
+    String password = passwordController.text;
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Veuillez remplir tous les champs."),
           backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Vérification de la syntaxe de l'email
+    bool isValidEmail =
+        RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+            .hasMatch(email);
+
+    if (!isValidEmail) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("L'adresse email saisie est mal formatée."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (password.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text("Votre mot de passe doit contenir au moins 8 caractères."),
+          backgroundColor: Colors.red,
         ),
       );
       return;
@@ -37,9 +65,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     try {
       final response = await apiService.post("/auth/register", {
-        "name": nameController.text,
-        "email": emailController.text,
-        "password": passwordController.text,
+        "name": name,
+        "email": email,
+        "password": password,
       });
 
       if (response.statusCode == 201) {
@@ -55,9 +83,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
         Navigator.pushReplacementNamed(context, "/login");
       }
     } catch (e) {
+      String errorMessage = "Un compte existe déjà avec cet email.";
+
+      // Vérification si l'erreur est liée à un email incorrect
+      if (e.toString().toLowerCase().contains("email")) {
+        errorMessage = "Adresse email incorrecte ou déjà enregistrée.";
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Un compte existe déjà avec cet email.'),
+        SnackBar(
+          content: Text(errorMessage),
           backgroundColor: Colors.red,
         ),
       );

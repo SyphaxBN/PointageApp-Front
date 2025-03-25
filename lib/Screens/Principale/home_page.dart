@@ -28,13 +28,18 @@ class HomePageState extends State<HomePage> {
 
   Future<void> fetchUserData() async {
     String? name = await StorageService.getUserName();
-    String? role =
-        await StorageService.getUserRole(); // 🔹 Récupérer le rôle stocké
+    String? role = await StorageService.getUserRole();
     String? photo = await StorageService.getUserPhoto();
-    print("📌 Rôle récupéré du storage: $role"); // Vérifier le stockage
+    String? userId = await StorageService
+        .getUserId(); // 🔹 Ajout : Récupérer l'ID utilisateur
 
-    if (name == null || name.isEmpty || role == null || role.isEmpty) {
-      // 🔹 Vérifie que le nom et le rôle sont bien récupérés
+    print("📌 Rôle récupéré du storage: $role");
+
+    if (name == null ||
+        name.isEmpty ||
+        role == null ||
+        role.isEmpty ||
+        userId == null) {
       final apiService = ApiService();
       final user = await apiService.getUser();
       if (user != null) {
@@ -44,27 +49,34 @@ class HomePageState extends State<HomePage> {
         }
         if (user.containsKey("role")) {
           role = user["role"];
-          print("✅ Rôle final après API : $role"); // Vérification
+          print("✅ Rôle final après API : $role");
           await StorageService.saveUserRole(role!);
         }
-        if (user.containsKey("photo")) {
+        if (user.containsKey("photo") && user["photo"] != null) {
           photo = user["photo"];
           await StorageService.saveUserPhoto(photo!);
+        } else {
+          photo = "default.png";
+        }
+        if (user.containsKey("id")) {
+          // 🔹 Ajout : Vérifier et stocker l'ID utilisateur
+          userId = user["id"];
+          await StorageService.saveUserId(userId!);
         }
       }
     }
 
     final lastAttendance = await AttendanceService.getLastAttendance();
-    print("🔍 Vérification de lastAttendance : $lastAttendance");
+    print("🔍 lastAttendance récupéré: $lastAttendance");
 
     setState(() {
       userName = name ?? "Utilisateur";
-      userRole = role ?? "Non défini"; // 🔹 Mise à jour du rôle
-      userPhoto =
-          photo ?? "default.png"; // 🔹 Utilise une image par défaut si absente
+      userRole = role ?? "Non défini";
+      userPhoto = photo ?? "default.png";
       todayDate = formatDate(DateTime.now());
 
-      if (lastAttendance != null) {
+      // Vérifie que les données appartiennent bien à l'utilisateur connecté
+      if (lastAttendance != null && lastAttendance["userId"] == userId) {
         clockInTime = lastAttendance["clockInTime"] ?? "--:--";
         clockOutTime = lastAttendance["clockOutTime"] ?? "Pas encore";
         lastLocation = lastAttendance["location"] ?? "Localisation inconnue";
@@ -168,6 +180,15 @@ class HomePageState extends State<HomePage> {
     }
 
     await fetchUserData();
+
+    // Mise à jour immédiate de l'affichage avec les nouvelles données récupérées
+    final lastAttendance = await AttendanceService.getLastAttendance();
+    setState(() {
+      clockInTime = lastAttendance?["clockInTime"] ?? "--:--";
+      clockOutTime = lastAttendance?["clockOutTime"] ?? "Pas encore";
+      lastLocation = lastAttendance?["location"] ?? "Localisation inconnue";
+    });
+
     print("🔄 Données utilisateur mises à jour après pointage d'arrivée");
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Pointage d'arrivée réussi!")),
@@ -201,6 +222,15 @@ class HomePageState extends State<HomePage> {
     }
 
     await fetchUserData();
+
+    // Mise à jour immédiate de l'affichage avec les nouvelles données récupérées
+    final lastAttendance = await AttendanceService.getLastAttendance();
+    setState(() {
+      clockInTime = lastAttendance?["clockInTime"] ?? "--:--";
+      clockOutTime = lastAttendance?["clockOutTime"] ?? "Pas encore";
+      lastLocation = lastAttendance?["location"] ?? "Localisation inconnue";
+    });
+
     print("🔄 Données utilisateur mises à jour après pointage de départ");
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Pointage de départ réussi!")),

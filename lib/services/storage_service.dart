@@ -19,6 +19,26 @@ class StorageService {
     await prefs.remove('auth_token');
   }
 
+  static Future<void> clearStorage() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Efface toutes les données stockées
+  }
+
+  static Future<void> saveUserId(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_id', userId);
+  }
+
+  static Future<String?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_id');
+  }
+
+  static Future<void> removeUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('user_id');
+  }
+
   static Future<void> saveUserName(String name) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('userName', name);
@@ -35,13 +55,11 @@ class StorageService {
   }
 
   static Future<void> saveUserRole(String role) async {
-    // 🔹 Sauvegarde du rôle
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('userRole', role);
   }
 
   static Future<String?> getUserRole() async {
-    // 🔹 Récupération du rôle
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('userRole');
   }

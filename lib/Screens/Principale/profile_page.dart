@@ -58,7 +58,7 @@ class ProfilePageState extends State<ProfilePage> {
       body: SafeArea(
         child: Stack(
           children: [
-            // Décorations en arrière-plan
+            // Décorations en arrière-plan (cercles)
             Positioned(
               top: -10,
               left: -85,
@@ -83,34 +83,152 @@ class ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
+
+            // Bouton retour au premier plan
+            Positioned(
+              top: 10,
+              left: 10,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundImage: userPhoto.isNotEmpty
-                          ? NetworkImage("http://10.0.2.2:8000$userPhoto")
-                              as ImageProvider
-                          : null,
-                      child: userPhoto.isEmpty
-                          ? Icon(Icons.person,
-                              size: 50, color: Colors.grey[600])
-                          : null,
+                    // Avatar avec bouton d'édition
+                    Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 80,
+                          backgroundImage: userPhoto.isNotEmpty
+                              ? NetworkImage("http://10.0.2.2:8000$userPhoto")
+                                  as ImageProvider
+                              : null,
+                          child: userPhoto.isEmpty
+                              ? Icon(Icons.person,
+                                  size: 80, color: Colors.grey[600])
+                              : null,
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                            child: IconButton(
+                              onPressed: () {
+                                // Action pour modifier la photo de profil
+                              },
+                              icon: const Icon(Icons.edit,
+                                  color: Colors.white, size: 20),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 10),
-                    Text(userName,
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
-                    Text(userEmail,
-                        style:
-                            const TextStyle(fontSize: 16, color: Colors.grey)),
-                    Text(userRole,
-                        style: const TextStyle(
-                            fontSize: 16, fontStyle: FontStyle.italic)),
+
                     const SizedBox(height: 20),
+
+                    // Carte avec infos utilisateur
+                    Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      elevation: 5, // Ombre ajoutée
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 20, horizontal: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.person, color: Colors.blue),
+                                const SizedBox(width: 10),
+                                Text(
+                                  userName,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 15),
+                            Row(
+                              children: [
+                                const Icon(Icons.email, color: Colors.blue),
+                                const SizedBox(width: 10),
+                                Text(
+                                  userEmail,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 15),
+                            Row(
+                              children: [
+                                const Icon(Icons.work, color: Colors.blue),
+                                const SizedBox(width: 10),
+                                Text(
+                                  userRole,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20), // Espacement augmenté
+
+                    // Bouton de déconnexion
+                    ElevatedButton(
+                      onPressed: () async {
+                        // Effacer toutes les données stockées
+                        await StorageService.clearStorage();
+
+                        // Rediriger vers la page de connexion et supprimer l'historique de navigation
+                        if (context.mounted) {
+                          Navigator.pushNamedAndRemoveUntil(
+                              context, '/login', (route) => false);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 24),
+                      ),
+                      child: const Text(
+                        "Déconnexion",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
                   ],
                 ),
               ),

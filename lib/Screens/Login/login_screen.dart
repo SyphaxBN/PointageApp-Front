@@ -18,11 +18,40 @@ class LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
 
   void _login() async {
-    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+    String email = emailController.text.trim();
+    String password = passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Veuillez remplir tous les champs"),
           backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Vérification de la syntaxe de l'email
+    bool isValidEmail =
+        RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+            .hasMatch(email);
+
+    if (!isValidEmail) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Veuillez saisir une adresse email valide"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (password.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text("Votre mot de passe doit contenir au moins 8 caractères"),
+          backgroundColor: Colors.red,
         ),
       );
       return;
@@ -34,8 +63,8 @@ class LoginScreenState extends State<LoginScreen> {
 
     try {
       final response = await apiService.post("/auth/login", {
-        "email": emailController.text,
-        "password": passwordController.text,
+        "email": email,
+        "password": password,
       });
 
       bool isError = response.data["error"] is bool
@@ -63,9 +92,15 @@ class LoginScreenState extends State<LoginScreen> {
           // );
         });
       } else {
+        String errorMessage = response.data["message"] ?? "Erreur de connexion";
+
+        if (errorMessage.toLowerCase().contains("email")) {
+          errorMessage = "Adresse email incorrecte";
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(response.data["message"] ?? "Erreur de connexion"),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
           ),
         );
