@@ -5,23 +5,21 @@ import 'package:authpage/services/storage_service.dart';
 class AttendanceService {
   static const String baseUrl = 'http://10.0.2.2:8000/attendance';
 
-  /// Enregistre un pointage d'arrivée
-  static Future<bool> clockIn(double latitude, double longitude) async {
+  static Future<String?> clockIn(double latitude, double longitude) async {
     return await _recordAttendance("clock-in", latitude, longitude);
   }
 
-  /// Enregistre un pointage de départ
-  static Future<bool> clockOut(double latitude, double longitude) async {
+  static Future<String?> clockOut(double latitude, double longitude) async {
     return await _recordAttendance("clock-out", latitude, longitude);
   }
 
   /// Fonction interne pour enregistrer un pointage
-  static Future<bool> _recordAttendance(
+  static Future<String?> _recordAttendance(
       String type, double latitude, double longitude) async {
     try {
       String? token = await StorageService.getToken();
       if (token == null || token.isEmpty) {
-        return false;
+        return "Token non disponible";
       }
 
       final response = await http.post(
@@ -37,12 +35,14 @@ class AttendanceService {
       );
 
       if (response.statusCode == 201) {
-        return true;
+        return null; // ✅ Succès
       } else {
-        return false;
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        return responseData['message'] ??
+            "Erreur inconnue"; // Retourne le message d'erreur du backend
       }
     } catch (e) {
-      return false;
+      return "Une erreur est survenue : $e";
     }
   }
 

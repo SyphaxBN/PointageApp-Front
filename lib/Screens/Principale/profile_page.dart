@@ -208,6 +208,9 @@ class ProfilePageState extends State<ProfilePage> {
                     ElevatedButton(
                       onPressed: () async {
                         // Effacer toutes les données stockées
+                        await StorageService.removeToken(); // Supprime le token
+                        await StorageService
+                            .clearUserData(); // Supprime les infos de l'utilisateur
                         await StorageService.clearStorage();
 
                         // Rediriger vers la page de connexion et supprimer l'historique de navigation

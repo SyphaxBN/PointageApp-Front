@@ -39,6 +39,12 @@ class StorageService {
     await prefs.remove('user_id');
   }
 
+  static Future<void> clearUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs
+        .remove('lastAttendance'); // Supprime les données du dernier pointage
+  }
+
   static Future<void> saveUserName(String name) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('userName', name);

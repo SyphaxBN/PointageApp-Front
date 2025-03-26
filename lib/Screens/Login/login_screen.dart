@@ -1,5 +1,6 @@
 import 'package:authpage/Screens/ResetPassword/request_reset_password_screen.dart';
 import 'package:authpage/Screens/Signup/signup_screen.dart';
+import 'package:authpage/services/attendance_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:authpage/services/api_service.dart';
@@ -82,14 +83,17 @@ class LoginScreenState extends State<LoginScreen> {
 
         await StorageService.saveToken(response.data["access_token"]);
 
+        // 🔥 Récupérer le dernier pointage après connexion
+        try {
+          final lastAttendance = await AttendanceService.getLastAttendance();
+          print("📌 Dernier pointage récupéré : $lastAttendance");
+        } catch (e) {
+          print("⚠️ Erreur lors de la récupération du dernier pointage : $e");
+        }
+
+// 🔀 Redirection vers l’accueil après 1 seconde
         Future.delayed(const Duration(seconds: 1), () {
           Navigator.pushReplacementNamed(context, '/home');
-          // Navigator.pushNamedAndRemoveUntil(
-          // context,
-          // '/home',
-          // (Route<dynamic> route) =>
-          // false, // Supprime toutes les routes précédentes ( Attention aux crashs sur l'émulateur Android Studio )
-          // );
         });
       } else {
         String errorMessage = response.data["message"] ?? "Erreur de connexion";

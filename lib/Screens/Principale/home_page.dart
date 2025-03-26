@@ -12,9 +12,10 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
+  // Variables pour stocker les informations utilisateur et de pointage
   String userName = "Chargement...";
-  String userRole = "Chargement..."; // Ajout du rôle
-  String userPhoto = "default.png"; // Ajout de la photo
+  String userRole = "Chargement...";
+  String userPhoto = "default.png";
   String clockInTime = "--:--";
   String clockOutTime = "Not yet";
   String lastLocation = "Localisation inconnue";
@@ -23,26 +24,32 @@ class HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    fetchUserData();
+    fetchUserData(); // Récupération des données utilisateur dès l'initialisation
   }
 
+  // Fonction asynchrone pour récupérer les données utilisateur depuis le stockage local ou l'API
   Future<void> fetchUserData() async {
+    // Récupération des informations depuis le stockage local
     String? name = await StorageService.getUserName();
     String? role = await StorageService.getUserRole();
     String? photo = await StorageService.getUserPhoto();
-    String? userId = await StorageService
-        .getUserId(); // 🔹 Ajout : Récupérer l'ID utilisateur
+    String? userId =
+        await StorageService.getUserId(); // Récupération de l'ID utilisateur
 
     print("📌 Rôle récupéré du storage: $role");
 
+    // Vérification si les données sont absentes ou incomplètes
     if (name == null ||
         name.isEmpty ||
         role == null ||
         role.isEmpty ||
         userId == null) {
       final apiService = ApiService();
-      final user = await apiService.getUser();
+      final user =
+          await apiService.getUser(); // Récupération des données via API
+
       if (user != null) {
+        // Stockage des données récupérées
         if (user.containsKey("name")) {
           name = user["name"];
           await StorageService.saveUserName(name!);
@@ -59,39 +66,43 @@ class HomePageState extends State<HomePage> {
           photo = "default.png";
         }
         if (user.containsKey("id")) {
-          // 🔹 Ajout : Vérifier et stocker l'ID utilisateur
           userId = user["id"];
           await StorageService.saveUserId(userId!);
         }
       }
     }
 
+    // Récupération du dernier pointage
     final lastAttendance = await AttendanceService.getLastAttendance();
     print("🔍 lastAttendance récupéré: $lastAttendance");
 
-    setState(() {
-      userName = name ?? "Utilisateur";
-      userRole = role ?? "Non défini";
-      userPhoto = photo ?? "default.png";
-      todayDate = formatDate(DateTime.now());
+    // Mise à jour de l'état avec les nouvelles données après le rendu initial
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        userName = name ?? "Utilisateur";
+        userRole = role ?? "Non défini";
+        userPhoto = photo ?? "default.png";
+        todayDate = formatDate(DateTime.now());
 
-      // Vérifie que les données appartiennent bien à l'utilisateur connecté
-      if (lastAttendance != null && lastAttendance["userId"] == userId) {
-        clockInTime = lastAttendance["clockInTime"] ?? "--:--";
-        clockOutTime = lastAttendance["clockOutTime"] ?? "Pas encore";
-        lastLocation = lastAttendance["location"] ?? "Localisation inconnue";
-      } else {
-        clockInTime = "--:--";
-        clockOutTime = "Pas encore";
-        lastLocation = "Aucune donnée disponible";
-      }
+        if (lastAttendance != null && lastAttendance["userId"] == userId) {
+          clockInTime = lastAttendance["clockInTime"] ?? "--:--";
+          clockOutTime = lastAttendance["clockOutTime"] ?? "Pas encore";
+          lastLocation = lastAttendance["location"] ?? "Localisation inconnue";
+        } else {
+          clockInTime = "--:--";
+          clockOutTime = "Pas encore";
+          lastLocation = "Aucune donnée disponible";
+        }
+      });
     });
   }
 
+  // Formate une date sous la forme "jour mois, année"
   String formatDate(DateTime date) {
     return "${date.day} ${getMonthName(date.month)}, ${date.year}";
   }
 
+  // Retourne le nom du mois correspondant au numéro du mois
   String getMonthName(int month) {
     const months = [
       "January",
@@ -110,42 +121,39 @@ class HomePageState extends State<HomePage> {
     return months[month - 1];
   }
 
+  // Vérifie et demande la permission de localisation à l'utilisateur
   Future<void> requestLocationPermission() async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Permission de localisation refusée.")),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Permission de localisation refusée.")));
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text("Veuillez activer la localisation dans les paramètres.")),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content:
+              Text("Veuillez activer la localisation dans les paramètres.")));
       return;
     }
   }
 
+  // Récupère la position actuelle de l'utilisateur
   Future<Position?> getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Activez la localisation pour pointer.")),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Activez la localisation pour pointer.")));
       return null;
     }
-
     return await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
+        desiredAccuracy: LocationAccuracy.high);
   }
 
+  // Vérifie si le service de localisation est activé, sinon ouvre les paramètres
   Future<void> ensureLocationServiceEnabled() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -153,88 +161,70 @@ class HomePageState extends State<HomePage> {
     }
   }
 
+  // Fonction pour gérer le pointage d'arrivée (clock-in)
   Future<void> handleClockIn() async {
     print("🚀 Début du pointage d'arrivée");
     await ensureLocationServiceEnabled();
     await requestLocationPermission();
     Position? position = await getCurrentLocation();
-    if (position == null) {
-      print("⚠️ Impossible d'obtenir la position");
-      return;
-    }
+    if (position == null) return;
 
     print("📍 Position actuelle : ${position.latitude}, ${position.longitude}");
-
-    bool success =
+    String? errorMessage =
         await AttendanceService.clockIn(position.latitude, position.longitude);
-    print(success
-        ? "✅ Pointage d'arrivée réussi"
-        : "❌ Pointage d'arrivée échoué");
 
-    if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("Vous êtes trop loin du lieu de pointage !")),
-      );
+    if (errorMessage != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(errorMessage)));
       return;
     }
 
-    await fetchUserData();
+    print("✅ Pointage d'arrivée réussi, mise à jour des données...");
 
-    // Mise à jour immédiate de l'affichage avec les nouvelles données récupérées
+    // Récupération immédiate du dernier pointage
     final lastAttendance = await AttendanceService.getLastAttendance();
+
+    // 🔥 Mise à jour immédiate de l'UI
     setState(() {
       clockInTime = lastAttendance?["clockInTime"] ?? "--:--";
       clockOutTime = lastAttendance?["clockOutTime"] ?? "Pas encore";
       lastLocation = lastAttendance?["location"] ?? "Localisation inconnue";
     });
 
-    print("🔄 Données utilisateur mises à jour après pointage d'arrivée");
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Pointage d'arrivée réussi!")),
-    );
+    print("✅ Données mises à jour avec succès !");
   }
 
+// Fonction pour gérer le pointage de départ (clock-out)
   Future<void> handleClockOut() async {
     print("🚀 Début du pointage de départ");
     await ensureLocationServiceEnabled();
     await requestLocationPermission();
     Position? position = await getCurrentLocation();
-    if (position == null) {
-      print("⚠️ Impossible d'obtenir la position");
-      return;
-    }
+    if (position == null) return;
 
     print("📍 Position actuelle : ${position.latitude}, ${position.longitude}");
-
-    bool success =
+    String? errorMessage =
         await AttendanceService.clockOut(position.latitude, position.longitude);
-    print(success
-        ? "✅ Pointage de départ réussi"
-        : "❌ Pointage de départ échoué");
 
-    if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("Vous êtes trop loin du lieu de pointage !")),
-      );
+    if (errorMessage != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(errorMessage)));
       return;
     }
 
-    await fetchUserData();
+    print("✅ Pointage de départ réussi, mise à jour des données...");
 
-    // Mise à jour immédiate de l'affichage avec les nouvelles données récupérées
+    // Récupération immédiate du dernier pointage
     final lastAttendance = await AttendanceService.getLastAttendance();
+
+    // 🔥 Mise à jour immédiate de l'UI
     setState(() {
       clockInTime = lastAttendance?["clockInTime"] ?? "--:--";
       clockOutTime = lastAttendance?["clockOutTime"] ?? "Pas encore";
       lastLocation = lastAttendance?["location"] ?? "Localisation inconnue";
     });
 
-    print("🔄 Données utilisateur mises à jour après pointage de départ");
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Pointage de départ réussi!")),
-    );
+    print("✅ Données mises à jour avec succès !");
   }
 
   @override
