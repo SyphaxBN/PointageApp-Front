@@ -70,16 +70,6 @@ class StorageService {
     return prefs.getString('userRole');
   }
 
-  static Future<void> saveUserPhoto(String photoUrl) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userPhoto', photoUrl);
-  }
-
-  static Future<String?> getUserPhoto() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('userPhoto');
-  }
-
   static Future<void> saveUserEmail(String email) async {
     if (email.isNotEmpty) {
       final prefs = await SharedPreferences.getInstance();
@@ -95,6 +85,16 @@ class StorageService {
   static Future<void> removeUserEmail() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user_email');
+  }
+
+  static Future<void> saveUserPhoto(String imageUrl) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_photo', imageUrl);
+  }
+
+  static Future<String?> getUserPhoto() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_photo');
   }
 }
 

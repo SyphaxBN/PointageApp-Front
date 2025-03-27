@@ -68,6 +68,24 @@ class ApiService {
     }
     return null;
   }
+
+  Future<String?> uploadProfilePhoto(String filePath) async {
+    try {
+      FormData formData = FormData.fromMap({
+        "file": await MultipartFile.fromFile(filePath, filename: "profile.jpg"),
+      });
+
+      Response response = await dio.post("/users/upload-photo", data: formData);
+
+      if (response.statusCode == 200) {
+        return response
+            .data["imageUrl"]; // Assurez-vous que le backend retourne l'URL
+      }
+    } catch (e) {
+      print("❌ Erreur lors de l'upload de la photo : $e");
+    }
+    return null;
+  }
 }
 
 final apiService = ApiService();

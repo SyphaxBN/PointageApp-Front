@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:authpage/services/api_service.dart';
 import 'package:authpage/services/storage_service.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -49,6 +51,27 @@ class ProfilePageState extends State<ProfilePage> {
       userRole = role ?? "Rôle inconnu";
       userPhoto = photo ?? "default.png";
     });
+  }
+
+  Future<void> pickImage() async {
+    var status = await Permission.photos
+        .request(); // Demande la permission d'accès aux photos
+
+    if (status.isGranted) {
+      try {
+        final pickedFile =
+            await ImagePicker().pickImage(source: ImageSource.gallery);
+        if (pickedFile != null) {
+          print("Image sélectionnée : ${pickedFile.path}");
+        } else {
+          print("Aucune image sélectionnée.");
+        }
+      } catch (e) {
+        print("Erreur lors de la sélection de l'image : $e");
+      }
+    } else {
+      print("Permission refusée.");
+    }
   }
 
   @override
@@ -126,8 +149,30 @@ class ProfilePageState extends State<ProfilePage> {
                               border: Border.all(color: Colors.white, width: 2),
                             ),
                             child: IconButton(
-                              onPressed: () {
-                                // Action pour modifier la photo de profil
+                              onPressed: () async {
+                                final ImagePicker picker = ImagePicker();
+                                final XFile? image = await picker.pickImage(
+                                    source: ImageSource.gallery);
+
+                                if (image != null) {
+                                  String? uploadedPhotoUrl = await apiService
+                                      .uploadProfilePhoto(image.path);
+
+                                  if (uploadedPhotoUrl != null) {
+                                    await StorageService.saveUserPhoto(
+                                        uploadedPhotoUrl);
+
+                                    setState(() {
+                                      userPhoto = uploadedPhotoUrl;
+                                    });
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              "Photo de profil mise à jour !")),
+                                    );
+                                  }
+                                }
                               },
                               icon: const Icon(Icons.edit,
                                   color: Colors.white, size: 20),
