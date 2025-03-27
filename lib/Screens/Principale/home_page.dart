@@ -1,3 +1,4 @@
+import 'package:authpage/Screens/Principale/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:authpage/services/api_service.dart';
@@ -284,7 +285,31 @@ class HomePageState extends State<HomePage> {
                       const Spacer(), // Pousse les éléments suivants à droite
                       TextButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, '/profile');
+                          Navigator.of(context).push(
+                            PageRouteBuilder(
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      const ProfilePage(),
+                              transitionsBuilder: (context, animation,
+                                  secondaryAnimation, child) {
+                                const begin =
+                                    Offset(1.0, 0.0); // Départ de la droite
+                                const end = Offset.zero;
+                                const curve = Curves.easeInOut;
+
+                                var tween = Tween(begin: begin, end: end)
+                                    .chain(CurveTween(curve: curve));
+
+                                return SlideTransition(
+                                  position: animation.drive(tween),
+                                  child: FadeTransition(
+                                    opacity: animation,
+                                    child: child,
+                                  ),
+                                );
+                              },
+                            ),
+                          );
                         },
                         child: const Text(
                           "Profile",
@@ -295,6 +320,7 @@ class HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
+
                       CircleAvatar(
                         radius: 30,
                         backgroundImage: userPhoto.isNotEmpty
