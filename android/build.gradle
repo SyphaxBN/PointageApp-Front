@@ -1,3 +1,22 @@
+buildscript {
+    ext.kotlin_version = '1.9.0'
+    ext {
+        compileSdkVersion = 33
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.0'  // Update to a version compatible with Gradle 8.3
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+// Remove the plugins block entirely, as it's causing conflicts
+// with the classpath dependencies above
+
 allprojects {
     repositories {
         google()
@@ -5,22 +24,15 @@ allprojects {
     }
 }
 
-rootProject.buildDir = "../build"
+rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
 subprojects {
-    project.evaluationDependsOn(":app")
+    project.evaluationDependsOn(':app')
 }
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
-}
-android {
-    compileSdkVersion 33
-    defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 33
-    }
 }
 

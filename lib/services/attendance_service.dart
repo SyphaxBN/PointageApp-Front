@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:authpage/services/storage_service.dart';
 
 class AttendanceService {
-  static const String baseUrl = 'http://10.0.2.2:8000/attendance';
+  static const String baseUrl = 'http://192.168.1.8:8000/attendance';
 
   static Future<String?> clockIn(double latitude, double longitude) async {
     return await _recordAttendance("clock-in", latitude, longitude);

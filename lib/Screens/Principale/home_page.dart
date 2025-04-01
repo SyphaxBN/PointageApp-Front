@@ -284,8 +284,9 @@ class HomePageState extends State<HomePage> {
                       ),
                       const Spacer(), // Pousse les éléments suivants à droite
                       TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
+                        onPressed: () async {
+                          // Naviguez vers la page de profil et attendez son résultat
+                          final result = await Navigator.of(context).push(
                             PageRouteBuilder(
                               pageBuilder:
                                   (context, animation, secondaryAnimation) =>
@@ -310,6 +311,20 @@ class HomePageState extends State<HomePage> {
                               },
                             ),
                           );
+
+                          // Si le résultat indique que des données ont été mises à jour, actualiser les données
+                          if (result == true) {
+                            await fetchUserData();
+                          } else {
+                            // Vérifier si la photo a été mise à jour
+                            String? newPhoto =
+                                await StorageService.getUserPhoto();
+                            if (newPhoto != null && newPhoto != userPhoto) {
+                              setState(() {
+                                userPhoto = newPhoto;
+                              });
+                            }
+                          }
                         },
                         child: const Text(
                           "Profile",
@@ -324,7 +339,7 @@ class HomePageState extends State<HomePage> {
                       CircleAvatar(
                         radius: 30,
                         backgroundImage: userPhoto.isNotEmpty
-                            ? NetworkImage("http://10.0.2.2:8000$userPhoto")
+                            ? NetworkImage("http://192.168.1.8:8000$userPhoto")
                                 as ImageProvider
                             : null,
                         child: userPhoto.isEmpty
