@@ -5,6 +5,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 
+/// Écran de profil utilisateur.
+/// Permet à l'utilisateur de visualiser et modifier ses informations personnelles,
+/// notamment sa photo de profil, et de se déconnecter.
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -13,26 +16,30 @@ class ProfilePage extends StatefulWidget {
 }
 
 class ProfilePageState extends State<ProfilePage> {
+  // Variables pour stocker les informations utilisateur
   String userName = "Chargement...";
   String userEmail = "Chargement...";
   String userRole = "Chargement...";
   String userPhoto = "default.png";
-  bool isUploading = false;
-  bool photoUpdated =
-      false; // Variable pour suivre si la photo a été mise à jour
+  bool isUploading = false; // Indicateur de téléchargement d'image en cours
+  bool photoUpdated = false; // Indicateur de mise à jour de la photo
 
   @override
   void initState() {
     super.initState();
-    fetchUserData();
+    fetchUserData(); // Chargement des données utilisateur au démarrage
   }
 
+  /// Récupère les données de l'utilisateur depuis le stockage local
+  /// ou depuis l'API si les données ne sont pas en cache.
   Future<void> fetchUserData() async {
+    // Tentative de récupération depuis le stockage local
     String? name = await StorageService.getUserName();
     String? email = await StorageService.getUserEmail();
     String? role = await StorageService.getUserRole();
     String? photo = await StorageService.getUserPhoto();
 
+    // Si les données ne sont pas en cache, on les récupère depuis l'API
     if (name == null || email == null || role == null) {
       final apiService = ApiService();
       final user = await apiService.getUser();
@@ -42,6 +49,7 @@ class ProfilePageState extends State<ProfilePage> {
         role = user["role"] ?? "Rôle inconnu";
         photo = user["photo"] ?? "default.png";
 
+        // Mise en cache des nouvelles données
         await StorageService.saveUserName(name!);
         await StorageService.saveUserEmail(email!);
         await StorageService.saveUserRole(role!);
@@ -49,6 +57,7 @@ class ProfilePageState extends State<ProfilePage> {
       }
     }
 
+    // Mise à jour de l'interface utilisateur
     setState(() {
       userName = name ?? "Utilisateur";
       userEmail = email ?? "Email inconnu";
@@ -57,6 +66,8 @@ class ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  /// Affiche un modal permettant à l'utilisateur de choisir
+  /// une source pour sa photo de profil (galerie ou caméra).
   Future<void> _showImageSourceOptions() async {
     await showModalBottomSheet(
       context: context,
@@ -87,10 +98,15 @@ class ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  /// Gère la sélection et le téléchargement d'une image 
+  /// depuis la galerie ou la caméra.
+  /// 
+  /// @param source La source de l'image (galerie ou caméra)
   Future<void> _pickImage(ImageSource source) async {
     bool permissionGranted = false;
 
     try {
+      // Demande de permissions selon la source choisie
       if (source == ImageSource.camera) {
         var cameraStatus = await Permission.camera.request();
         permissionGranted = cameraStatus.isGranted;
@@ -110,6 +126,7 @@ class ProfilePageState extends State<ProfilePage> {
         }
       }
 
+      // Si l'utilisateur a refusé les permissions
       if (!permissionGranted) {
         print(
             "❌ Permission refusée: Camera=${source == ImageSource.camera}, Gallery=${source == ImageSource.gallery}");
@@ -118,7 +135,7 @@ class ProfilePageState extends State<ProfilePage> {
               content: Text(
                   "Permission refusée pour accéder aux photos ou à la caméra")));
 
-          // Proposer d'ouvrir les paramètres
+          // Proposer d'ouvrir les paramètres de l'application
           showDialog(
             context: context,
             builder: (BuildContext context) => AlertDialog(
@@ -144,15 +161,16 @@ class ProfilePageState extends State<ProfilePage> {
         return;
       }
 
+      // Sélection de l'image avec ImagePicker
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(
         source: source,
-        imageQuality: 70,
+        imageQuality: 70, // Compression de l'image pour optimiser le transfert
       );
 
       if (image != null) {
         setState(() {
-          isUploading = true;
+          isUploading = true; // Début du téléchargement
         });
 
         // Afficher des informations de debug sur le fichier
@@ -174,11 +192,12 @@ class ProfilePageState extends State<ProfilePage> {
           return;
         }
 
+        // Téléchargement de l'image sur le serveur
         String? uploadedPhotoUrl =
             await apiService.uploadProfilePhoto(image.path);
 
         setState(() {
-          isUploading = false;
+          isUploading = false; // Fin du téléchargement
         });
 
         if (uploadedPhotoUrl != null) {
@@ -215,7 +234,7 @@ class ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Correction de l'URL pour ajouter le slash manquant entre le port et le chemin
+    // Construction de l'URL complète de l'image de profil
     String imageUrl = userPhoto.isNotEmpty
         ? (userPhoto.startsWith('/')
             ? "http://192.168.1.8:8000$userPhoto" // Le slash est déjà dans userPhoto
@@ -236,6 +255,7 @@ class ProfilePageState extends State<ProfilePage> {
         body: SafeArea(
           child: Stack(
             children: [
+              // Éléments de design - cercles bleus
               Positioned(
                 top: -10,
                 left: -85,
@@ -260,6 +280,7 @@ class ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
+              // Bouton de retour
               Positioned(
                 top: 10,
                 left: 10,
@@ -276,6 +297,7 @@ class ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // Photo de profil avec bouton d'édition
                       Stack(
                         children: [
                           isUploading
@@ -294,6 +316,7 @@ class ProfilePageState extends State<ProfilePage> {
                                           size: 80, color: Colors.grey[600])
                                       : null,
                                 ),
+                          // Bouton d'édition de la photo
                           Positioned(
                             bottom: 0,
                             right: 0,
@@ -316,6 +339,7 @@ class ProfilePageState extends State<ProfilePage> {
                         ],
                       ),
                       const SizedBox(height: 20),
+                      // Carte avec informations utilisateur
                       Card(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
@@ -327,6 +351,7 @@ class ProfilePageState extends State<ProfilePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // Nom utilisateur
                               Row(
                                 children: [
                                   const Icon(Icons.person, color: Colors.blue),
@@ -342,6 +367,7 @@ class ProfilePageState extends State<ProfilePage> {
                                 ],
                               ),
                               const SizedBox(height: 15),
+                              // Email utilisateur
                               Row(
                                 children: [
                                   const Icon(Icons.email, color: Colors.blue),
@@ -357,6 +383,7 @@ class ProfilePageState extends State<ProfilePage> {
                                 ],
                               ),
                               const SizedBox(height: 15),
+                              // Rôle utilisateur
                               Row(
                                 children: [
                                   const Icon(Icons.work, color: Colors.blue),
@@ -376,13 +403,16 @@ class ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                       const SizedBox(height: 20),
+                      // Bouton de déconnexion
                       ElevatedButton(
                         onPressed: () async {
+                          // Suppression des données utilisateur lors de la déconnexion
                           await StorageService.removeToken();
                           await StorageService.clearUserData();
                           await StorageService.clearStorage();
 
                           if (context.mounted) {
+                            // Redirection vers l'écran de connexion
                             Navigator.pushNamedAndRemoveUntil(
                                 context, '/login', (route) => false);
                           }

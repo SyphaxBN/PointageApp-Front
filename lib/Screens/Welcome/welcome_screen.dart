@@ -1,16 +1,19 @@
 import 'package:authpage/Screens/Login/login_screen.dart';
 import 'package:flutter/material.dart';
 
+/// Écran d'accueil de l'application.
+/// Premier écran que voit l'utilisateur au lancement de l'application.
+/// Présente une introduction à l'application et un bouton pour commencer.
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F0FA), // Bleu très clair
+      backgroundColor: const Color(0xFFE6F0FA), // Bleu très clair pour le fond
       body: Stack(
         children: [
-          // Cercles bleus en haut à gauche
+          // Création d'éléments de design - cercles bleus en haut à gauche
           Positioned(
             top: -10,
             left: -85,
@@ -43,7 +46,7 @@ class WelcomeScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Image principale
+                    // Logo de l'application
                     Image.asset(
                       "assets/images/beko.png",
                       height: 310,
@@ -69,7 +72,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
 
-                    // Description
+                    // Description du service
                     const Text(
                       "La solution de suivi intelligent de Beko garantit une gestion du temps précise et efficace, aidant les équipes à rester productives et organisées.",
                       textAlign: TextAlign.center,
@@ -80,9 +83,10 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
 
-                    // Bouton "Commencer"
+                    // Bouton "Commencer" avec animation de transition
                     ElevatedButton(
                       onPressed: () {
+                        // Navigation vers l'écran de connexion avec animation
                         Navigator.of(context).push(
                           PageRouteBuilder(
                             pageBuilder:
@@ -90,6 +94,7 @@ class WelcomeScreen extends StatelessWidget {
                                     const LoginScreen(),
                             transitionsBuilder: (context, animation,
                                 secondaryAnimation, child) {
+                              // Configuration de l'animation de transition
                               const begin =
                                   Offset(1.0, 0.0); // Départ de la droite
                               const end = Offset.zero;
@@ -98,6 +103,7 @@ class WelcomeScreen extends StatelessWidget {
                               var tween = Tween(begin: begin, end: end)
                                   .chain(CurveTween(curve: curve));
 
+                              // Combinaison d'une animation de glissement et de fondu
                               return SlideTransition(
                                 position: animation.drive(tween),
                                 child: FadeTransition(
@@ -109,7 +115,8 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                         );
                       },
-          
+
+                      // Style du bouton
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF007BFF),
                         padding: const EdgeInsets.symmetric(

@@ -6,6 +6,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:authpage/services/api_service.dart';
 import 'package:authpage/services/storage_service.dart';
 
+/// Écran de connexion de l'application.
+/// Permet à l'utilisateur de se connecter avec son email et mot de passe.
+/// Offre également des liens vers l'inscription et la réinitialisation de mot de passe.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -14,14 +17,19 @@ class LoginScreen extends StatefulWidget {
 }
 
 class LoginScreenState extends State<LoginScreen> {
+  // Contrôleurs pour les champs de saisie
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  bool isLoading = false;
+  bool isLoading = false; // Indicateur d'état de chargement
 
+  /// Gère le processus de connexion.
+  /// Valide les entrées, envoie les identifiants au serveur et traite la réponse.
   void _login() async {
+    // Récupération et nettoyage des données saisies
     String email = emailController.text.trim();
     String password = passwordController.text;
 
+    // Validation des champs obligatoires
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -32,7 +40,7 @@ class LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // Vérification de la syntaxe de l'email
+    // Validation de la syntaxe de l'email
     bool isValidEmail =
         RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
             .hasMatch(email);
@@ -47,6 +55,7 @@ class LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    // Validation de la longueur du mot de passe
     if (password.length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -58,22 +67,27 @@ class LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    // Activation de l'indicateur de chargement
     setState(() {
       isLoading = true;
     });
 
     try {
+      // Envoi des identifiants au serveur
       final response = await apiService.post("/auth/login", {
         "email": email,
         "password": password,
       });
 
+      // Vérification du statut d'erreur de la réponse
       bool isError = response.data["error"] is bool
           ? response.data["error"]
           : response.data["error"].toString() == "true";
 
+      // Traitement de la réponse du serveur
       if ((response.data["status"] == 200 || response.statusCode == 200) &&
           !isError) {
+        // Notification de succès
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Connexion réussie !"),
@@ -81,9 +95,10 @@ class LoginScreenState extends State<LoginScreen> {
           ),
         );
 
+        // Sauvegarde du token d'authentification
         await StorageService.saveToken(response.data["access_token"]);
 
-        // 🔥 Récupérer le dernier pointage après connexion
+        // Récupération du dernier pointage après connexion
         try {
           final lastAttendance = await AttendanceService.getLastAttendance();
           print("📌 Dernier pointage récupéré : $lastAttendance");
@@ -91,17 +106,20 @@ class LoginScreenState extends State<LoginScreen> {
           print("⚠️ Erreur lors de la récupération du dernier pointage : $e");
         }
 
-// 🔀 Redirection vers l’accueil après 1 seconde
+        // Redirection vers l'accueil après un court délai
         Future.delayed(const Duration(seconds: 1), () {
           Navigator.pushReplacementNamed(context, '/home');
         });
       } else {
+        // Gestion des erreurs de connexion
         String errorMessage = response.data["message"] ?? "Erreur de connexion";
 
+        // Amélioration du message d'erreur pour l'email
         if (errorMessage.toLowerCase().contains("email")) {
           errorMessage = "Adresse email incorrecte";
         }
 
+        // Affichage du message d'erreur
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
@@ -110,6 +128,7 @@ class LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
+      // Gestion des erreurs de requête
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Erreur lors de la connexion"),
@@ -117,18 +136,22 @@ class LoginScreenState extends State<LoginScreen> {
         ),
       );
     } finally {
+      // Désactivation de l'indicateur de chargement
       setState(() {
         isLoading = false;
       });
     }
   }
 
+  /// Gère la navigation vers d'autres écrans avec une animation de transition.
+  /// @param route La route cible ('/register' ou '/reset-password-request')
   void _navigateWithAnimation(String route) {
     Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             _getScreenFromRoute(route),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          // Configuration de l'animation
           const begin = Offset(1.0, 0.0);
           const end = Offset.zero;
           const curve = Curves.easeInOut;
@@ -136,6 +159,7 @@ class LoginScreenState extends State<LoginScreen> {
           var tween =
               Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
+          // Animation combinant glissement et fondu
           return SlideTransition(
             position: animation.drive(tween),
             child: FadeTransition(
@@ -148,6 +172,9 @@ class LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  /// Retourne l'écran correspondant à la route spécifiée.
+  /// @param route La route cible
+  /// @return Le widget correspondant à la route
   Widget _getScreenFromRoute(String route) {
     switch (route) {
       case '/register':
@@ -165,6 +192,7 @@ class LoginScreenState extends State<LoginScreen> {
       backgroundColor: const Color(0xFFE6F0FA),
       body: Stack(
         children: [
+          // Éléments de design - cercles bleus
           Positioned(
             top: -10,
             left: -85,
@@ -196,11 +224,13 @@ class LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Illustration SVG
                   SvgPicture.asset(
                     "assets/images/login.svg",
                     height: 200,
                   ),
                   const SizedBox(height: 20),
+                  // Titre
                   const Text(
                     "Connexion",
                     style: TextStyle(
@@ -210,6 +240,7 @@ class LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
+                  // Champ de saisie pour l'email
                   TextField(
                     controller: emailController,
                     decoration: InputDecoration(
@@ -226,6 +257,7 @@ class LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
+                  // Champ de saisie pour le mot de passe
                   TextField(
                     controller: passwordController,
                     obscureText: true,
@@ -243,6 +275,7 @@ class LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
+                  // Lien pour mot de passe oublié
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
@@ -258,6 +291,7 @@ class LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
+                  // Bouton de connexion
                   ElevatedButton(
                     onPressed: isLoading ? null : _login,
                     child: isLoading
@@ -267,6 +301,7 @@ class LoginScreenState extends State<LoginScreen> {
                                 TextStyle(color: Colors.white, fontSize: 18)),
                   ),
                   const SizedBox(height: 12),
+                  // Lien vers la page d'inscription
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

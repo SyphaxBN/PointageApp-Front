@@ -8,19 +8,27 @@ import 'package:authpage/Screens/ResetPassword/reset_password_screen.dart';
 import 'package:authpage/Screens/Principale/home_page.dart';
 import 'package:authpage/constants.dart';
 
+/// Point d'entrée principal de l'application.
+/// Configure le thème, les routes et lance l'application.
 void main() => runApp(const MyApp());
 
+/// Widget racine de l'application.
+/// Configure le thème global et définit les routes de navigation.
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner:
+          false, // Suppression de la bannière de débogage
       title: 'Flutter Auth',
       theme: ThemeData(
+        // Configuration du thème principal
         primaryColor: const Color.fromARGB(255, 31, 125, 233),
         scaffoldBackgroundColor: Colors.white,
+
+        // Style des boutons élevés
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             elevation: 0,
@@ -31,6 +39,8 @@ class MyApp extends StatelessWidget {
             minimumSize: const Size(double.infinity, 56),
           ),
         ),
+
+        // Style des champs de saisie
         inputDecorationTheme: const InputDecorationTheme(
           filled: true,
           fillColor: kPrimaryLightColor,
@@ -46,16 +56,22 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: '/',
+      initialRoute: '/', // Route initiale au lancement de l'application
+
+      // Définition des routes de navigation
       routes: {
-        '/': (context) => const WelcomeScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const SignUpScreen(),
-        '/reset-password-request': (context) =>
-            const RequestResetPasswordScreen(),
-        '/reset-password': (context) => const ResetPasswordScreen(),
-        '/home': (context) => const HomePage(),
-        '/profile': (context) => const ProfilePage(),
+        '/': (context) => const WelcomeScreen(), // Écran d'accueil
+        '/login': (context) => const LoginScreen(), // Écran de connexion
+        '/register': (context) => const SignUpScreen(), // Écran d'inscription
+        '/reset-password-request':
+            (context) => // Écran de demande de réinitialisation
+                const RequestResetPasswordScreen(),
+        '/reset-password': (context) =>
+            const ResetPasswordScreen(), // Écran de réinitialisation
+        '/home': (context) =>
+            const HomePage(), // Écran d'accueil après connexion
+        '/profile': (context) =>
+            const ProfilePage(), // Écran de profil utilisateur
       },
     );
   }

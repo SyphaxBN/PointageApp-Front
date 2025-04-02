@@ -5,6 +5,9 @@ import 'dart:io';
 import 'package:http_parser/http_parser.dart';
 import 'dart:math';
 
+/// Service de gestion des appels API vers le backend.
+/// Centralise toutes les communications HTTP entre l'application mobile
+/// et le serveur backend, gère l'authentification et les erreurs réseau.
 class ApiService {
   // Configuration de Dio avec des options avancées pour la connexion
   final Dio dio = Dio(
@@ -17,6 +20,8 @@ class ApiService {
     ),
   );
 
+  /// Constructeur du service API.
+  /// Initialise les intercepteurs et configure le client HTTP.
   ApiService() {
     _initializeInterceptors();
 
@@ -31,6 +36,8 @@ class ApiService {
     ));
   }
 
+  /// Initialise les intercepteurs pour ajouter automatiquement le token d'authentification
+  /// à toutes les requêtes sortantes.
   void _initializeInterceptors() async {
     String? token = await StorageService.getToken(); // ✅ Récupération unifiée
 
@@ -39,6 +46,12 @@ class ApiService {
     } else {}
   }
 
+  /// Effectue une requête HTTP POST vers l'endpoint spécifié.
+  /// 
+  /// @param endpoint L'URL de l'endpoint à appeler, relative à l'URL de base
+  /// @param data Les données à envoyer dans le corps de la requête
+  /// @return L'objet Response contenant la réponse du serveur
+  /// @throws Future.error en cas d'erreur de communication
   Future<Response> post(String endpoint, Map<String, dynamic> data) async {
     try {
       return await dio.post(endpoint, data: data);
@@ -47,6 +60,11 @@ class ApiService {
     }
   }
 
+  /// Effectue une requête HTTP GET vers l'endpoint spécifié.
+  /// 
+  /// @param endpoint L'URL de l'endpoint à appeler, relative à l'URL de base
+  /// @return L'objet Response contenant la réponse du serveur
+  /// @throws Future.error en cas d'erreur de communication
   Future<Response> get(String endpoint) async {
     try {
       return await dio.get(endpoint);
@@ -55,11 +73,17 @@ class ApiService {
     }
   }
 
+  /// Sauvegarde le token d'authentification dans le stockage local.
+  /// 
+  /// @param token Le token JWT à sauvegarder
   Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('jwt_token', token);
   }
 
+  /// Récupère les informations de l'utilisateur connecté depuis le backend.
+  /// 
+  /// @return Un objet Map contenant les données de l'utilisateur ou null en cas d'échec
   Future<Map<String, dynamic>?> getUser() async {
     try {
       final token = await StorageService.getToken();
@@ -103,6 +127,11 @@ class ApiService {
     return null;
   }
 
+  /// Télécharge une photo de profil utilisateur vers le serveur.
+  /// Gère la validation du fichier, la détermination du type MIME et la gestion des erreurs.
+  /// 
+  /// @param filePath Le chemin local vers le fichier image à télécharger
+  /// @return L'URL de l'image téléchargée sur le serveur, ou null en cas d'échec
   Future<String?> uploadProfilePhoto(String filePath) async {
     try {
       // Vérifier que le fichier existe
@@ -152,6 +181,7 @@ class ApiService {
       print(
           "📦 Contenu de FormData: champ 'file' avec le fichier ${file.path}");
 
+      // Envoi de la requête au serveur
       Response response = await dio.post(
         "/users/upload-photo",
         data: formData,
@@ -164,6 +194,7 @@ class ApiService {
         ),
       );
 
+      // Traitement de la réponse
       if (response.statusCode == 200 || response.statusCode == 201) {
         print("✅ Photo uploadée avec succès: ${response.data}");
         return response.data["imageUrl"];
@@ -185,4 +216,5 @@ class ApiService {
   }
 }
 
+// Instance singleton du service API, utilisable dans toute l'application
 final apiService = ApiService();

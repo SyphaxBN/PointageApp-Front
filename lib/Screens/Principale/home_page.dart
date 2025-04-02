@@ -5,6 +5,9 @@ import 'package:authpage/services/api_service.dart';
 import 'package:authpage/services/storage_service.dart';
 import 'package:authpage/services/attendance_service.dart';
 
+/// Page d'accueil principale de l'application.
+/// Affiche les informations de pointage de l'utilisateur connecté
+/// et permet d'effectuer des pointages d'entrée et de sortie.
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -28,7 +31,9 @@ class HomePageState extends State<HomePage> {
     fetchUserData(); // Récupération des données utilisateur dès l'initialisation
   }
 
-  // Fonction asynchrone pour récupérer les données utilisateur depuis le stockage local ou l'API
+  /// Récupère les données de l'utilisateur et son dernier pointage.
+  /// Les données sont chargées depuis le stockage local en priorité,
+  /// puis depuis l'API si nécessaire.
   Future<void> fetchUserData() async {
     // Récupération des informations depuis le stockage local
     String? name = await StorageService.getUserName();
@@ -98,12 +103,16 @@ class HomePageState extends State<HomePage> {
     });
   }
 
-  // Formate une date sous la forme "jour mois, année"
+  /// Formate une date sous la forme "jour mois, année".
+  /// @param date La date à formater
+  /// @return La date formatée comme chaîne de caractères
   String formatDate(DateTime date) {
     return "${date.day} ${getMonthName(date.month)}, ${date.year}";
   }
 
-  // Retourne le nom du mois correspondant au numéro du mois
+  /// Convertit un numéro de mois en son nom en anglais.
+  /// @param month Le numéro du mois (1-12)
+  /// @return Le nom du mois correspondant
   String getMonthName(int month) {
     const months = [
       "January",
@@ -122,7 +131,8 @@ class HomePageState extends State<HomePage> {
     return months[month - 1];
   }
 
-  // Vérifie et demande la permission de localisation à l'utilisateur
+  /// Vérifie et demande la permission de localisation à l'utilisateur.
+  /// Affiche des messages d'erreur appropriés en cas de refus.
   Future<void> requestLocationPermission() async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
@@ -142,7 +152,8 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  // Récupère la position actuelle de l'utilisateur
+  /// Récupère la position actuelle de l'utilisateur.
+  /// @return L'objet Position contenant latitude et longitude, ou null en cas d'échec
   Future<Position?> getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -154,7 +165,8 @@ class HomePageState extends State<HomePage> {
         desiredAccuracy: LocationAccuracy.high);
   }
 
-  // Vérifie si le service de localisation est activé, sinon ouvre les paramètres
+  /// Vérifie si le service de localisation est activé sur l'appareil.
+  /// Ouvre les paramètres système si désactivé.
   Future<void> ensureLocationServiceEnabled() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -162,7 +174,8 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  // Fonction pour gérer le pointage d'arrivée (clock-in)
+  /// Gère le processus de pointage d'arrivée (entrée).
+  /// Vérifie les permissions, récupère la position actuelle et envoie les données au backend.
   Future<void> handleClockIn() async {
     print("🚀 Début du pointage d'arrivée");
     await ensureLocationServiceEnabled();
@@ -195,7 +208,8 @@ class HomePageState extends State<HomePage> {
     print("✅ Données mises à jour avec succès !");
   }
 
-// Fonction pour gérer le pointage de départ (clock-out)
+/// Gère le processus de pointage de départ (sortie).
+/// Similaire à handleClockIn mais pour la sortie.
   Future<void> handleClockOut() async {
     print("🚀 Début du pointage de départ");
     await ensureLocationServiceEnabled();
@@ -235,6 +249,7 @@ class HomePageState extends State<HomePage> {
       body: SafeArea(
         child: Stack(
           children: [
+            // Éléments de design - cercles bleus
             Positioned(
               top: -10,
               left: -85,
@@ -264,6 +279,7 @@ class HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // En-tête avec informations utilisateur et accès au profil
                   Row(
                     children: [
                       Column(
@@ -285,7 +301,7 @@ class HomePageState extends State<HomePage> {
                       const Spacer(), // Pousse les éléments suivants à droite
                       TextButton(
                         onPressed: () async {
-                          // Naviguez vers la page de profil et attendez son résultat
+                          // Navigation vers la page de profil avec gestion du retour
                           final result = await Navigator.of(context).push(
                             PageRouteBuilder(
                               pageBuilder:
@@ -312,7 +328,7 @@ class HomePageState extends State<HomePage> {
                             ),
                           );
 
-                          // Si le résultat indique que des données ont été mises à jour, actualiser les données
+                          // Si le résultat indique que des données ont été mises à jour, actualiser
                           if (result == true) {
                             await fetchUserData();
                           } else {
@@ -336,6 +352,7 @@ class HomePageState extends State<HomePage> {
                         ),
                       ),
 
+                      // Avatar de l'utilisateur
                       CircleAvatar(
                         radius: 30,
                         backgroundImage: userPhoto.isNotEmpty
@@ -350,12 +367,14 @@ class HomePageState extends State<HomePage> {
                     ],
                   ),
                   const SizedBox(height: 20),
+                  // Message de bienvenue personnalisé
                   Text(
-                    "Bienvenue chez Beko, $userName!", // ✅ Correction affichage du nom
+                    "Bienvenue chez Beko, $userName!",
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 20),
+                  // Carte avec informations de pointage du jour
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -365,6 +384,7 @@ class HomePageState extends State<HomePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // En-tête de la carte avec date
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -385,6 +405,7 @@ class HomePageState extends State<HomePage> {
                           ],
                         ),
                         const SizedBox(height: 10),
+                        // Informations d'entrée et sortie
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -427,6 +448,7 @@ class HomePageState extends State<HomePage> {
                           ],
                         ),
                         const SizedBox(height: 10), // 🔹 Ajout d'un espacement
+                        // Information de localisation
                         Row(
                           children: [
                             const Icon(Icons.location_on, color: Colors.red),
@@ -439,8 +461,7 @@ class HomePageState extends State<HomePage> {
                                 style: const TextStyle(
                                     fontSize: 16, fontWeight: FontWeight.w500),
                                 softWrap: true,
-                                overflow: TextOverflow
-                                    .visible, // Permet d'afficher tout le texte
+                                overflow: TextOverflow.visible,
                               ),
                             ),
                           ],
@@ -449,6 +470,7 @@ class HomePageState extends State<HomePage> {
                     ),
                   ),
                   const SizedBox(height: 20),
+                  // Boutons de pointage entrée/sortie
                   Row(
                     children: [
                       Expanded(

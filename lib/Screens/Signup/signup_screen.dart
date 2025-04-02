@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:authpage/services/api_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+/// Écran d'inscription permettant aux nouveaux utilisateurs de créer un compte.
+/// Collecte le nom, l'email et le mot de passe, effectue des validations,
+/// puis envoie les données au serveur pour créer le compte.
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
@@ -11,18 +14,24 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+  // Contrôleurs pour les champs de saisie
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  bool isLoading = false;
+  bool isLoading = false; // Indicateur d'état de chargement
 
+  /// Gère le processus d'inscription d'un nouvel utilisateur.
+  /// Valide les entrées, envoie les données au serveur et gère la réponse.
   void _register() async {
-    if (isLoading) return;
+    if (isLoading)
+      return; // Évite les soumissions multiples pendant le chargement
 
+    // Récupération et nettoyage des données saisies
     String name = nameController.text.trim();
     String email = emailController.text.trim();
     String password = passwordController.text;
 
+    // Validation des champs obligatoires
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -33,7 +42,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
-    // Vérification de la syntaxe de l'email
+    // Validation de la syntaxe de l'email
     bool isValidEmail =
         RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
             .hasMatch(email);
@@ -48,6 +57,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
+    // Validation de la longueur du mot de passe
     if (password.length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -59,20 +69,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
+    // Activation de l'indicateur de chargement
     setState(() {
       isLoading = true;
     });
 
     try {
+      // Envoi des données au serveur
       final response = await apiService.post("/auth/register", {
         "name": name,
         "email": email,
         "password": password,
       });
 
+      // Traitement de la réponse du serveur
       if (response.statusCode == 201) {
         await apiService.saveToken(response.data["access_token"]);
 
+        // Notification de succès
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Inscription réussie !"),
@@ -80,16 +94,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         );
 
+        // Redirection vers l'écran de connexion
         Navigator.pushReplacementNamed(context, "/login");
       }
     } catch (e) {
+      // Gestion des erreurs d'inscription
       String errorMessage = "Un compte existe déjà avec cet email.";
 
-      // Vérification si l'erreur est liée à un email incorrect
+      // Personnalisation du message d'erreur
       if (e.toString().toLowerCase().contains("email")) {
         errorMessage = "Adresse email incorrecte ou déjà enregistrée.";
       }
 
+      // Affichage du message d'erreur
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMessage),
@@ -97,18 +114,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       );
     } finally {
+      // Désactivation de l'indicateur de chargement
       setState(() {
         isLoading = false;
       });
     }
   }
 
+  /// Navigation vers l'écran de connexion avec une animation de transition.
   void _navigateToLogin() {
     Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             const LoginScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          // Configuration de l'animation
           const begin = Offset(1.0, 0.0);
           const end = Offset.zero;
           const curve = Curves.easeInOut;
@@ -117,6 +137,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
           var offsetAnimation = animation.drive(tween);
 
+          // Animation de glissement
           return SlideTransition(position: offsetAnimation, child: child);
         },
       ),
@@ -129,6 +150,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       backgroundColor: const Color(0xFFE6F0FA),
       body: Stack(
         children: [
+          // Éléments de design - cercles bleus
           Positioned(
             top: -10,
             left: -85,
@@ -160,11 +182,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // Illustration SVG
                     SvgPicture.asset(
                       "assets/images/signup.svg",
                       height: 180,
                     ),
                     const SizedBox(height: 20),
+                    // Titre de la page
                     const Text(
                       "Créer un compte",
                       textAlign: TextAlign.center,
@@ -174,16 +198,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
+                    // Champ de saisie pour l'email
                     buildTextField(
                         emailController, "Adresse e-mail", Icons.email),
                     const SizedBox(height: 10),
+                    // Champ de saisie pour le nom
                     buildTextField(nameController, "Nom", Icons.person),
                     const SizedBox(height: 10),
+                    // Champ de saisie pour le mot de passe
                     buildTextField(
                         passwordController, "Mot de passe", Icons.lock,
                         isPassword: true),
                     const SizedBox(height: 20),
                     const SizedBox(height: 10),
+                    // Bouton d'inscription
                     ElevatedButton(
                       onPressed: isLoading ? null : _register,
                       style: ElevatedButton.styleFrom(
@@ -201,6 +229,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   TextStyle(color: Colors.white, fontSize: 18),
                             ),
                     ),
+                    // Lien vers la page de connexion
                     TextButton(
                       onPressed: _navigateToLogin,
                       child: RichText(
@@ -232,12 +261,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
+  /// Crée un champ de saisie stylisé avec un texte d'indication et une icône.
+  /// 
+  /// @param controller Le contrôleur pour gérer la valeur du champ
+  /// @param hintText Le texte d'indication affiché lorsque le champ est vide
+  /// @param icon L'icône à afficher à gauche du champ
+  /// @param isPassword Indique si le champ doit masquer le texte (pour les mots de passe)
+  /// @return Un widget TextField configuré
   Widget buildTextField(
       TextEditingController controller, String hintText, IconData icon,
       {bool isPassword = false}) {
     return TextField(
       controller: controller,
-      obscureText: isPassword,
+      obscureText: isPassword, // Masque le texte si c'est un mot de passe
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
