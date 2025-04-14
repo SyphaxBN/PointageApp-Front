@@ -12,7 +12,7 @@ class ApiService {
   // Configuration de Dio avec des options avancées pour la connexion
   final Dio dio = Dio(
     BaseOptions(
-      baseUrl: "http://192.168.1.8:8000",
+      baseUrl: "http://192.168.1.7:8000",
       // Augmenter les timeouts pour éviter les "Connection timed out"
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),

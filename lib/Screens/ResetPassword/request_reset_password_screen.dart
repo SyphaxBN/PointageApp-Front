@@ -96,6 +96,7 @@ class _RequestResetPasswordScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFE6F0FA),
       body: Stack(
         children: [
@@ -125,68 +126,72 @@ class _RequestResetPasswordScreenState
             ),
           ),
           Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Illustration SVG
-                  SvgPicture.asset(
-                    'assets/images/forgotpass.svg',
-                    height: 180,
-                  ),
-                  const SizedBox(height: 20),
-                  // Texte explicatif
-                  const Text(
-                    "Entrer votre email pour recevoir un token de réinitialisation",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-                  // Champ de saisie pour l'email
-                  TextField(
-                    controller: emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      hintText: "Email",
-                      prefixIcon:
-                          const Icon(Icons.email, color: Color(0xFF3498DB)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 15, horizontal: 20),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Illustration SVG
+                    SvgPicture.asset(
+                      'assets/images/forgotpass.svg',
+                      height: 180,
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Bouton d'envoi d'email
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: isLoading ? null : _requestReset,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3498DB),
-                        shape: RoundedRectangleBorder(
+                    const SizedBox(height: 20),
+                    // Texte explicatif
+                    const Text(
+                      "Entrer votre email pour recevoir un token de réinitialisation",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    // Champ de saisie pour l'email
+                    TextField(
+                      controller: emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        hintText: "Email",
+                        prefixIcon:
+                            const Icon(Icons.email, color: Color(0xFF3498DB)),
+                        border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none,
                         ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 15, horizontal: 20),
                       ),
-                      child: isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "Envoyer un Email",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    // Bouton d'envoi d'email
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: isLoading ? null : _requestReset,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF3498DB),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white)
+                            : const Text(
+                                "Envoyer un Email",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

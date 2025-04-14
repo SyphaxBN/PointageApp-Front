@@ -147,6 +147,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFE6F0FA),
       body: Stack(
         children: [
@@ -177,81 +178,84 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
           SafeArea(
             child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Illustration SVG
-                    SvgPicture.asset(
-                      "assets/images/signup.svg",
-                      height: 180,
-                    ),
-                    const SizedBox(height: 20),
-                    // Titre de la page
-                    const Text(
-                      "Créer un compte",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Illustration SVG
+                      SvgPicture.asset(
+                        "assets/images/signup.svg",
+                        height: 180,
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Champ de saisie pour l'email
-                    buildTextField(
-                        emailController, "Adresse e-mail", Icons.email),
-                    const SizedBox(height: 10),
-                    // Champ de saisie pour le nom
-                    buildTextField(nameController, "Nom", Icons.person),
-                    const SizedBox(height: 10),
-                    // Champ de saisie pour le mot de passe
-                    buildTextField(
-                        passwordController, "Mot de passe", Icons.lock,
-                        isPassword: true),
-                    const SizedBox(height: 20),
-                    const SizedBox(height: 10),
-                    // Bouton d'inscription
-                    ElevatedButton(
-                      onPressed: isLoading ? null : _register,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF007BFF),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                      const SizedBox(height: 20),
+                      // Titre de la page
+                      const Text(
+                        "Créer un compte",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
                         ),
-                        minimumSize: const Size(double.infinity, 55),
                       ),
-                      child: isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "S'inscrire",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 18),
-                            ),
-                    ),
-                    // Lien vers la page de connexion
-                    TextButton(
-                      onPressed: _navigateToLogin,
-                      child: RichText(
-                        text: const TextSpan(
-                          text: "Vous avez déjà un compte ? ",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.normal,
+                      const SizedBox(height: 10),
+                      // Champ de saisie pour l'email
+                      buildTextField(
+                          emailController, "Adresse e-mail", Icons.email),
+                      const SizedBox(height: 10),
+                      // Champ de saisie pour le nom
+                      buildTextField(nameController, "Nom", Icons.person),
+                      const SizedBox(height: 10),
+                      // Champ de saisie pour le mot de passe
+                      buildTextField(
+                          passwordController, "Mot de passe", Icons.lock,
+                          isPassword: true),
+                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
+                      // Bouton d'inscription
+                      ElevatedButton(
+                        onPressed: isLoading ? null : _register,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF007BFF),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
                           ),
-                          children: [
-                            TextSpan(
-                              text: "Se connecter.",
-                              style: TextStyle(
-                                color: Color(0xFF007BFF),
-                                fontWeight: FontWeight.bold,
+                          minimumSize: const Size(double.infinity, 55),
+                        ),
+                        child: isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white)
+                            : const Text(
+                                "S'inscrire",
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 18),
                               ),
+                      ),
+                      // Lien vers la page de connexion
+                      TextButton(
+                        onPressed: _navigateToLogin,
+                        child: RichText(
+                          text: const TextSpan(
+                            text: "Vous avez déjà un compte ? ",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.normal,
                             ),
-                          ],
+                            children: [
+                              TextSpan(
+                                text: "Se connecter.",
+                                style: TextStyle(
+                                  color: Color(0xFF007BFF),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -262,7 +266,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   /// Crée un champ de saisie stylisé avec un texte d'indication et une icône.
-  /// 
+  ///
   /// @param controller Le contrôleur pour gérer la valeur du champ
   /// @param hintText Le texte d'indication affiché lorsque le champ est vide
   /// @param icon L'icône à afficher à gauche du champ

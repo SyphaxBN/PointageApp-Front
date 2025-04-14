@@ -10,6 +10,7 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFE6F0FA), // Bleu très clair pour le fond
       body: Stack(
         children: [
@@ -41,102 +42,104 @@ class WelcomeScreen extends StatelessWidget {
 
           SafeArea(
             child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Logo de l'application
-                    Image.asset(
-                      "assets/images/beko.png",
-                      height: 310,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Titre sur deux lignes
-                    const Text(
-                      "Suivi intelligent pour un travail",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Logo de l'application
+                      Image.asset(
+                        "assets/images/beko.png",
+                        height: 310,
                       ),
-                    ),
-                    const Text(
-                      "précis et efficace",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
+                      const SizedBox(height: 20),
 
-                    // Description du service
-                    const Text(
-                      "La solution de suivi intelligent de Beko garantit une gestion du temps précise et efficace, aidant les équipes à rester productives et organisées.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color.fromARGB(255, 102, 102, 102),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Bouton "Commencer" avec animation de transition
-                    ElevatedButton(
-                      onPressed: () {
-                        // Navigation vers l'écran de connexion avec animation
-                        Navigator.of(context).push(
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    const LoginScreen(),
-                            transitionsBuilder: (context, animation,
-                                secondaryAnimation, child) {
-                              // Configuration de l'animation de transition
-                              const begin =
-                                  Offset(1.0, 0.0); // Départ de la droite
-                              const end = Offset.zero;
-                              const curve = Curves.easeInOut;
-
-                              var tween = Tween(begin: begin, end: end)
-                                  .chain(CurveTween(curve: curve));
-
-                              // Combinaison d'une animation de glissement et de fondu
-                              return SlideTransition(
-                                position: animation.drive(tween),
-                                child: FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      },
-
-                      // Style du bouton
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF007BFF),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 50,
-                          vertical: 15,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      child: const Text(
-                        "Commencer",
+                      // Titre sur deux lignes
+                      const Text(
+                        "Suivi intelligent pour un travail",
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                  ],
+                      const Text(
+                        "précis et efficace",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Description du service
+                      const Text(
+                        "La solution de suivi intelligent de Beko garantit une gestion du temps précise et efficace, aidant les équipes à rester productives et organisées.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color.fromARGB(255, 102, 102, 102),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Bouton "Commencer" avec animation de transition
+                      ElevatedButton(
+                        onPressed: () {
+                          // Navigation vers l'écran de connexion avec animation
+                          Navigator.of(context).push(
+                            PageRouteBuilder(
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      const LoginScreen(),
+                              transitionsBuilder: (context, animation,
+                                  secondaryAnimation, child) {
+                                // Configuration de l'animation de transition
+                                const begin =
+                                    Offset(1.0, 0.0); // Départ de la droite
+                                const end = Offset.zero;
+                                const curve = Curves.easeInOut;
+
+                                var tween = Tween(begin: begin, end: end)
+                                    .chain(CurveTween(curve: curve));
+
+                                // Combinaison d'une animation de glissement et de fondu
+                                return SlideTransition(
+                                  position: animation.drive(tween),
+                                  child: FadeTransition(
+                                    opacity: animation,
+                                    child: child,
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
+
+                        // Style du bouton
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF007BFF),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 50,
+                            vertical: 15,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: const Text(
+                          "Commencer",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

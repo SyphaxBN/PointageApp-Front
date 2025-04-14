@@ -356,7 +356,7 @@ class HomePageState extends State<HomePage> {
                       CircleAvatar(
                         radius: 30,
                         backgroundImage: userPhoto.isNotEmpty
-                            ? NetworkImage("http://192.168.1.8:8000$userPhoto")
+                            ? NetworkImage("http://192.168.1.7:8000$userPhoto")
                                 as ImageProvider
                             : null,
                         child: userPhoto.isEmpty

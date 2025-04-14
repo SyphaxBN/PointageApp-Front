@@ -237,8 +237,8 @@ class ProfilePageState extends State<ProfilePage> {
     // Construction de l'URL complète de l'image de profil
     String imageUrl = userPhoto.isNotEmpty
         ? (userPhoto.startsWith('/')
-            ? "http://192.168.1.8:8000$userPhoto" // Le slash est déjà dans userPhoto
-            : "http://192.168.1.8:8000/$userPhoto") // Ajout du slash ici
+            ? "http://192.168.1.7:8000$userPhoto" // Le slash est déjà dans userPhoto
+            : "http://192.168.1.7:8000/$userPhoto") // Ajout du slash ici
         : "";
 
     // Debugging de l'URL construite

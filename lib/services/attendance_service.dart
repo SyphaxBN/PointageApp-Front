@@ -7,7 +7,7 @@ import 'package:authpage/services/storage_service.dart';
 /// récupérer l'historique des pointages et le dernier pointage.
 class AttendanceService {
   /// URL de base pour les appels API liés aux pointages
-  static const String baseUrl = 'http://192.168.1.8:8000/attendance';
+  static const String baseUrl = 'http://192.168.1.7:8000/attendance';
 
   /// Enregistre un pointage d'entrée (arrivée) pour l'utilisateur.
   /// @param latitude La latitude de la position de l'utilisateur lors du pointage

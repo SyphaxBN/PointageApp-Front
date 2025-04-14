@@ -83,6 +83,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFE6F0FA),
       body: Stack(
         children: [
@@ -112,50 +113,52 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ),
           ),
           Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Illustration SVG
-                  SvgPicture.asset(
-                    'assets/images/notifpass.svg',
-                    height: 180,
-                  ),
-                  const SizedBox(height: 20),
-                  // Champ pour entrer le token reçu par email
-                  _buildTextField(tokenController, "Token",
-                      icon: Icons.vpn_key),
-                  const SizedBox(height: 10),
-                  // Champ pour entrer le nouveau mot de passe
-                  _buildTextField(passwordController, "Nouveau mot de passe",
-                      isPassword: true, icon: Icons.lock),
-                  const SizedBox(height: 10),
-                  // Champ pour confirmer le nouveau mot de passe
-                  _buildTextField(confirmPasswordController,
-                      "Confirmer le nouveau mot de passe",
-                      isPassword: true, icon: Icons.lock_outline),
-                  const SizedBox(height: 20),
-                  // Bouton de réinitialisation
-                  ElevatedButton(
-                    onPressed: _resetPassword,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4A90E2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Illustration SVG
+                    SvgPicture.asset(
+                      'assets/images/notifpass.svg',
+                      height: 180,
+                    ),
+                    const SizedBox(height: 20),
+                    // Champ pour entrer le token reçu par email
+                    _buildTextField(tokenController, "Token",
+                        icon: Icons.vpn_key),
+                    const SizedBox(height: 10),
+                    // Champ pour entrer le nouveau mot de passe
+                    _buildTextField(passwordController, "Nouveau mot de passe",
+                        isPassword: true, icon: Icons.lock),
+                    const SizedBox(height: 10),
+                    // Champ pour confirmer le nouveau mot de passe
+                    _buildTextField(confirmPasswordController,
+                        "Confirmer le nouveau mot de passe",
+                        isPassword: true, icon: Icons.lock_outline),
+                    const SizedBox(height: 20),
+                    // Bouton de réinitialisation
+                    ElevatedButton(
+                      onPressed: _resetPassword,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4A90E2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 14, horizontal: 40),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 14, horizontal: 40),
+                      child: const Text(
+                        "Réinitialiser le mot de passe",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
-                    child: const Text(
-                      "Réinitialiser le mot de passe",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -165,7 +168,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   /// Crée un champ de saisie stylisé avec un texte d'indication et une icône.
-  /// 
+  ///
   /// @param controller Le contrôleur pour gérer la valeur du champ
   /// @param hintText Le texte d'indication affiché lorsque le champ est vide
   /// @param isPassword Indique si le champ doit masquer le texte (pour les mots de passe)
