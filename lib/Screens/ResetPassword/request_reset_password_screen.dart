@@ -95,107 +95,141 @@ class _RequestResetPasswordScreenState
 
   @override
   Widget build(BuildContext context) {
+    // Configuration responsive
+    final Size screenSize = MediaQuery.of(context).size;
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    // Ajustement des dimensions
+    final double horizontalPadding = screenSize.width * 0.05;
+    final double illustrationHeight =
+        isLandscape ? screenSize.height * 0.3 : screenSize.height * 0.2;
+    final double fieldWidth =
+        isLandscape ? screenSize.width * 0.6 : double.infinity;
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFE6F0FA),
-      body: Stack(
-        children: [
-          // Éléments de design - cercles bleus
-          Positioned(
-            top: -10,
-            left: -85,
-            child: Container(
-              width: 180,
-              height: 180,
-              decoration: const BoxDecoration(
-                color: Color(0xFFB3DAF1),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Positioned(
-            top: -100,
-            left: -8,
-            child: Container(
-              width: 180,
-              height: 180,
-              decoration: const BoxDecoration(
-                color: Color(0xFF80C7E8),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Center(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Illustration SVG
-                    SvgPicture.asset(
-                      'assets/images/forgotpass.svg',
-                      height: 180,
-                    ),
-                    const SizedBox(height: 20),
-                    // Texte explicatif
-                    const Text(
-                      "Entrer votre email pour recevoir un token de réinitialisation",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    // Champ de saisie pour l'email
-                    TextField(
-                      controller: emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        hintText: "Email",
-                        prefixIcon:
-                            const Icon(Icons.email, color: Color(0xFF3498DB)),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 15, horizontal: 20),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    // Bouton d'envoi d'email
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: isLoading ? null : _requestReset,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3498DB),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: isLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white)
-                            : const Text(
-                                "Envoyer un Email",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ],
+      body: SafeArea(
+        child: LayoutBuilder(builder: (context, constraints) {
+          return Stack(
+            children: [
+              // Éléments de design - cercles bleus
+              Positioned(
+                top: -10,
+                left: -85,
+                child: Container(
+                  width: 180,
+                  height: 180,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFB3DAF1),
+                    shape: BoxShape.circle,
+                  ),
                 ),
               ),
-            ),
-          ),
-        ],
+              Positioned(
+                top: -100,
+                left: -8,
+                child: Container(
+                  width: 180,
+                  height: 180,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF80C7E8),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+              Center(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding, vertical: 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Illustration SVG avec hauteur adaptative
+                        SvgPicture.asset(
+                          'assets/images/forgotpass.svg',
+                          height: illustrationHeight,
+                          fit: BoxFit.contain,
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Texte explicatif
+                        Container(
+                          width: fieldWidth,
+                          child: const Text(
+                            "Entrer votre email pour recevoir un token de réinitialisation",
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w500),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Centralisation des champs en mode paysage
+                        Center(
+                          child: Container(
+                            width: fieldWidth,
+                            child: Column(
+                              children: [
+                                // Champ de saisie pour l'email
+                                TextField(
+                                  controller: emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    hintText: "Email",
+                                    prefixIcon: const Icon(Icons.email,
+                                        color: Color(0xFF3498DB)),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 15, horizontal: 20),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Bouton d'envoi d'email
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 50,
+                                  child: ElevatedButton(
+                                    onPressed: isLoading ? null : _requestReset,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF3498DB),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                    ),
+                                    child: isLoading
+                                        ? const CircularProgressIndicator(
+                                            color: Colors.white)
+                                        : const Text(
+                                            "Envoyer un Email",
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }),
       ),
     );
   }

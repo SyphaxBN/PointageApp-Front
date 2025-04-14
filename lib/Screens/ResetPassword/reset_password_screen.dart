@@ -82,87 +82,120 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Configuration responsive
+    final Size screenSize = MediaQuery.of(context).size;
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    // Ajustement des dimensions
+    final double horizontalPadding = screenSize.width * 0.05;
+    final double illustrationHeight =
+        isLandscape ? screenSize.height * 0.3 : screenSize.height * 0.2;
+    final double fieldWidth =
+        isLandscape ? screenSize.width * 0.6 : double.infinity;
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFE6F0FA),
-      body: Stack(
-        children: [
-          // Éléments de design - cercles bleus
-          Positioned(
-            top: -10,
-            left: -85,
-            child: Container(
-              width: 180,
-              height: 180,
-              decoration: const BoxDecoration(
-                color: Color(0xFFB3DAF1),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Positioned(
-            top: -100,
-            left: -8,
-            child: Container(
-              width: 180,
-              height: 180,
-              decoration: const BoxDecoration(
-                color: Color(0xFF80C7E8),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Center(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Illustration SVG
-                    SvgPicture.asset(
-                      'assets/images/notifpass.svg',
-                      height: 180,
-                    ),
-                    const SizedBox(height: 20),
-                    // Champ pour entrer le token reçu par email
-                    _buildTextField(tokenController, "Token",
-                        icon: Icons.vpn_key),
-                    const SizedBox(height: 10),
-                    // Champ pour entrer le nouveau mot de passe
-                    _buildTextField(passwordController, "Nouveau mot de passe",
-                        isPassword: true, icon: Icons.lock),
-                    const SizedBox(height: 10),
-                    // Champ pour confirmer le nouveau mot de passe
-                    _buildTextField(confirmPasswordController,
-                        "Confirmer le nouveau mot de passe",
-                        isPassword: true, icon: Icons.lock_outline),
-                    const SizedBox(height: 20),
-                    // Bouton de réinitialisation
-                    ElevatedButton(
-                      onPressed: _resetPassword,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4A90E2),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 14, horizontal: 40),
-                      ),
-                      child: const Text(
-                        "Réinitialiser le mot de passe",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
+      body: SafeArea(
+        child: LayoutBuilder(builder: (context, constraints) {
+          return Stack(
+            children: [
+              // Éléments de design - cercles bleus
+              Positioned(
+                top: -10,
+                left: -85,
+                child: Container(
+                  width: 180,
+                  height: 180,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFB3DAF1),
+                    shape: BoxShape.circle,
+                  ),
                 ),
               ),
-            ),
-          ),
-        ],
+              Positioned(
+                top: -100,
+                left: -8,
+                child: Container(
+                  width: 180,
+                  height: 180,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF80C7E8),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+              Center(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding, vertical: 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Illustration SVG avec hauteur adaptative
+                        SvgPicture.asset(
+                          'assets/images/notifpass.svg',
+                          height: illustrationHeight,
+                          fit: BoxFit.contain,
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Centralisation des champs en mode paysage
+                        Center(
+                          child: Container(
+                            width: fieldWidth,
+                            child: Column(
+                              children: [
+                                // Champ pour entrer le token reçu par email
+                                _buildTextField(tokenController, "Token",
+                                    icon: Icons.vpn_key),
+                                const SizedBox(height: 10),
+
+                                // Champ pour entrer le nouveau mot de passe
+                                _buildTextField(
+                                    passwordController, "Nouveau mot de passe",
+                                    isPassword: true, icon: Icons.lock),
+                                const SizedBox(height: 10),
+
+                                // Champ pour confirmer le nouveau mot de passe
+                                _buildTextField(confirmPasswordController,
+                                    "Confirmer le nouveau mot de passe",
+                                    isPassword: true, icon: Icons.lock_outline),
+                                const SizedBox(height: 20),
+
+                                // Bouton de réinitialisation
+                                ElevatedButton(
+                                  onPressed: _resetPassword,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF4A90E2),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 14, horizontal: 40),
+                                  ),
+                                  child: const Text(
+                                    "Réinitialiser le mot de passe",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }),
       ),
     );
   }

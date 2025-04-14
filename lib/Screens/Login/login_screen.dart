@@ -188,139 +188,191 @@ class LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Configuration responsive
+    final Size screenSize = MediaQuery.of(context).size;
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    // Ajustement des dimensions
+    final double horizontalPadding = screenSize.width * 0.05;
+    final double illustrationHeight =
+        isLandscape ? screenSize.height * 0.3 : screenSize.height * 0.2;
+    final double fieldWidth =
+        isLandscape ? screenSize.width * 0.6 : double.infinity;
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFE6F0FA),
-      body: Stack(
-        children: [
-          // Éléments de design - cercles bleus
-          Positioned(
-            top: -10,
-            left: -85,
-            child: Container(
-              width: 180,
-              height: 180,
-              decoration: const BoxDecoration(
-                color: Color(0xFFB3DAF1),
-                shape: BoxShape.circle,
+      body: SafeArea(
+        child: LayoutBuilder(builder: (context, constraints) {
+          return Stack(
+            children: [
+              // Éléments de design - cercles bleus
+              Positioned(
+                top: -10,
+                left: -85,
+                child: Container(
+                  width: 180,
+                  height: 180,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFB3DAF1),
+                    shape: BoxShape.circle,
+                  ),
+                ),
               ),
-            ),
-          ),
-          Positioned(
-            top: -100,
-            left: -8,
-            child: Container(
-              width: 180,
-              height: 180,
-              decoration: const BoxDecoration(
-                color: Color(0xFF80C7E8),
-                shape: BoxShape.circle,
+              Positioned(
+                top: -100,
+                left: -8,
+                child: Container(
+                  width: 180,
+                  height: 180,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF80C7E8),
+                    shape: BoxShape.circle,
+                  ),
+                ),
               ),
-            ),
-          ),
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Illustration SVG
-                  SvgPicture.asset(
-                    "assets/images/login.svg",
-                    height: 200,
-                  ),
-                  const SizedBox(height: 20),
-                  // Titre
-                  const Text(
-                    "Connexion",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Color.fromARGB(255, 0, 0, 0),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  // Champ de saisie pour l'email
-                  TextField(
-                    controller: emailController,
-                    decoration: InputDecoration(
-                      hintText: "Adresse e-mail",
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: const Icon(Icons.email, color: Colors.blue),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 15),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  // Champ de saisie pour le mot de passe
-                  TextField(
-                    controller: passwordController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      hintText: "Mot de passe",
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: const Icon(Icons.lock, color: Colors.blue),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 15),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  // Lien pour mot de passe oublié
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () =>
-                          _navigateWithAnimation('/reset-password-request'),
-                      child: const Text(
-                        "Mot de passe oublié ?",
-                        style: TextStyle(
-                          color: Color(0xFF007BFF),
-                          fontWeight: FontWeight.bold,
+              Center(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding, vertical: 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Illustration SVG avec hauteur adaptative
+                        SvgPicture.asset(
+                          "assets/images/login.svg",
+                          height: illustrationHeight,
+                          fit: BoxFit.contain,
                         ),
-                      ),
+                        const SizedBox(height: 20),
+
+                        // Titre
+                        const Text(
+                          "Connexion",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        // Centralisation des champs en mode paysage
+                        Center(
+                          child: Container(
+                            width: fieldWidth,
+                            child: Column(
+                              children: [
+                                // Champ de saisie pour l'email
+                                TextField(
+                                  controller: emailController,
+                                  decoration: InputDecoration(
+                                    hintText: "Adresse e-mail",
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    prefixIcon: const Icon(Icons.email,
+                                        color: Colors.blue),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 15),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+
+                                // Champ de saisie pour le mot de passe
+                                TextField(
+                                  controller: passwordController,
+                                  obscureText: true,
+                                  decoration: InputDecoration(
+                                    hintText: "Mot de passe",
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    prefixIcon: const Icon(Icons.lock,
+                                        color: Colors.blue),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 15),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+
+                                // Lien pour mot de passe oublié
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: () => _navigateWithAnimation(
+                                        '/reset-password-request'),
+                                    child: const Text(
+                                      "Mot de passe oublié ?",
+                                      style: TextStyle(
+                                        color: Color(0xFF007BFF),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+
+                                // Bouton de connexion
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: isLoading ? null : _login,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF007BFF),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
+                                    ),
+                                    child: isLoading
+                                        ? const CircularProgressIndicator(
+                                            color: Colors.white)
+                                        : const Text("Se connecter",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 18)),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Lien vers la page d'inscription
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text("Pas encore de compte ? "),
+                                    GestureDetector(
+                                      onTap: () =>
+                                          _navigateWithAnimation('/register'),
+                                      child: const Text("S'inscrire",
+                                          style: TextStyle(
+                                              color: Color(0xFF007BFF),
+                                              fontWeight: FontWeight.bold)),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  // Bouton de connexion
-                  ElevatedButton(
-                    onPressed: isLoading ? null : _login,
-                    child: isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Se connecter",
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 18)),
-                  ),
-                  const SizedBox(height: 12),
-                  // Lien vers la page d'inscription
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("Pas encore de compte ? "),
-                      GestureDetector(
-                        onTap: () => _navigateWithAnimation('/register'),
-                        child: const Text("S'inscrire",
-                            style: TextStyle(
-                                color: Color(0xFF007BFF),
-                                fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        }),
       ),
     );
   }

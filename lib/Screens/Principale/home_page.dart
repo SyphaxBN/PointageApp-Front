@@ -208,8 +208,8 @@ class HomePageState extends State<HomePage> {
     print("✅ Données mises à jour avec succès !");
   }
 
-/// Gère le processus de pointage de départ (sortie).
-/// Similaire à handleClockIn mais pour la sortie.
+  /// Gère le processus de pointage de départ (sortie).
+  /// Similaire à handleClockIn mais pour la sortie.
   Future<void> handleClockOut() async {
     print("🚀 Début du pointage de départ");
     await ensureLocationServiceEnabled();
@@ -244,6 +244,12 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Configuration responsive
+    final Size screenSize = MediaQuery.of(context).size;
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final bool isTablet = screenSize.shortestSide >= 600;
+
     return Scaffold(
       backgroundColor: const Color(0xFFE6F0FA),
       body: SafeArea(
@@ -274,226 +280,299 @@ class HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // En-tête avec informations utilisateur et accès au profil
-                  Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            userName,
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            userRole,
-                            style: const TextStyle(
-                                fontSize: 14,
-                                color: Color.fromARGB(255, 75, 75, 75)),
-                          ),
-                        ],
-                      ),
-                      const Spacer(), // Pousse les éléments suivants à droite
-                      TextButton(
-                        onPressed: () async {
-                          // Navigation vers la page de profil avec gestion du retour
-                          final result = await Navigator.of(context).push(
-                            PageRouteBuilder(
-                              pageBuilder:
-                                  (context, animation, secondaryAnimation) =>
-                                      const ProfilePage(),
-                              transitionsBuilder: (context, animation,
-                                  secondaryAnimation, child) {
-                                const begin =
-                                    Offset(1.0, 0.0); // Départ de la droite
-                                const end = Offset.zero;
-                                const curve = Curves.easeInOut;
-
-                                var tween = Tween(begin: begin, end: end)
-                                    .chain(CurveTween(curve: curve));
-
-                                return SlideTransition(
-                                  position: animation.drive(tween),
-                                  child: FadeTransition(
-                                    opacity: animation,
-                                    child: child,
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-
-                          // Si le résultat indique que des données ont été mises à jour, actualiser
-                          if (result == true) {
-                            await fetchUserData();
-                          } else {
-                            // Vérifier si la photo a été mise à jour
-                            String? newPhoto =
-                                await StorageService.getUserPhoto();
-                            if (newPhoto != null && newPhoto != userPhoto) {
-                              setState(() {
-                                userPhoto = newPhoto;
-                              });
-                            }
-                          }
-                        },
-                        child: const Text(
-                          "Profile",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-
-                      // Avatar de l'utilisateur
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundImage: userPhoto.isNotEmpty
-                            ? NetworkImage("http://192.168.1.7:8000$userPhoto")
-                                as ImageProvider
-                            : null,
-                        child: userPhoto.isEmpty
-                            ? Icon(Icons.person,
-                                size: 30, color: Colors.grey[600])
-                            : null,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  // Message de bienvenue personnalisé
-                  Text(
-                    "Bienvenue chez Beko, $userName!",
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(height: 20),
-                  // Carte avec informations de pointage du jour
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+            SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // En-tête avec informations utilisateur et accès au profil
+                    Row(
                       children: [
-                        // En-tête de la carte avec date
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.calendar_today,
-                                    color: Colors.blue),
-                                const SizedBox(width: 5),
-                                const Text("Status d'Aujourd'hui",
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold)),
-                              ],
+                            Text(
+                              userName,
+                              style: TextStyle(
+                                  fontSize: isTablet ? 22 : 20,
+                                  fontWeight: FontWeight.bold),
                             ),
-                            Text(todayDate,
-                                style: const TextStyle(
-                                    fontSize: 14, color: Colors.grey)),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        // Informations d'entrée et sortie
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Icon(Icons.access_time,
-                                        color: Colors.green),
-                                    const SizedBox(width: 5),
-                                    const Text("Arrivée",
-                                        style: TextStyle(fontSize: 14)),
-                                  ],
-                                ),
-                                Text(clockInTime,
-                                    style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.blue)),
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Icon(Icons.access_time,
-                                        color: Colors.orange),
-                                    const SizedBox(width: 5),
-                                    const Text("Départ",
-                                        style: TextStyle(fontSize: 14)),
-                                  ],
-                                ),
-                                Text(clockOutTime,
-                                    style: const TextStyle(
-                                        fontSize: 16, color: Colors.grey)),
-                              ],
+                            Text(
+                              userRole,
+                              style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Color.fromARGB(255, 75, 75, 75)),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 10), // 🔹 Ajout d'un espacement
-                        // Information de localisation
-                        Row(
-                          children: [
-                            const Icon(Icons.location_on, color: Colors.red),
-                            const SizedBox(width: 5),
-                            Flexible(
-                              child: Text(
-                                lastLocation.isNotEmpty
-                                    ? lastLocation
-                                    : "Localisation inconnue",
-                                style: const TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.w500),
-                                softWrap: true,
-                                overflow: TextOverflow.visible,
+                        const Spacer(), // Pousse les éléments suivants à droite
+                        TextButton(
+                          onPressed: () async {
+                            // Navigation vers la page de profil avec gestion du retour
+                            final result = await Navigator.of(context).push(
+                              PageRouteBuilder(
+                                pageBuilder:
+                                    (context, animation, secondaryAnimation) =>
+                                        const ProfilePage(),
+                                transitionsBuilder: (context, animation,
+                                    secondaryAnimation, child) {
+                                  const begin =
+                                      Offset(1.0, 0.0); // Départ de la droite
+                                  const end = Offset.zero;
+                                  const curve = Curves.easeInOut;
+
+                                  var tween = Tween(begin: begin, end: end)
+                                      .chain(CurveTween(curve: curve));
+
+                                  return SlideTransition(
+                                    position: animation.drive(tween),
+                                    child: FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    ),
+                                  );
+                                },
                               ),
+                            );
+
+                            // Si le résultat indique que des données ont été mises à jour, actualiser
+                            if (result == true) {
+                              await fetchUserData();
+                            } else {
+                              // Vérifier si la photo a été mise à jour
+                              String? newPhoto =
+                                  await StorageService.getUserPhoto();
+                              if (newPhoto != null && newPhoto != userPhoto) {
+                                setState(() {
+                                  userPhoto = newPhoto;
+                                });
+                              }
+                            }
+                          },
+                          child: const Text(
+                            "Profile",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
-                          ],
+                          ),
+                        ),
+
+                        // Avatar de l'utilisateur
+                        CircleAvatar(
+                          radius: isTablet ? 40 : 30,
+                          backgroundColor: Colors.grey[200],
+                          backgroundImage: userPhoto != "default.png" &&
+                                  userPhoto.isNotEmpty
+                              ? NetworkImage(userPhoto.startsWith('/')
+                                      ? "http://192.168.1.7:8000$userPhoto"
+                                      : "http://192.168.1.7:8000/$userPhoto")
+                                  as ImageProvider
+                              : null,
+                          child: userPhoto == "default.png" || userPhoto.isEmpty
+                              ? Icon(Icons.person,
+                                  size: isTablet ? 30 : 22,
+                                  color: Colors.grey[600])
+                              : null,
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Boutons de pointage entrée/sortie
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: handleClockIn,
-                          child: const Text("Arrivée"),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: handleClockOut,
-                          child: const Text("Départ"),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                    SizedBox(height: isTablet ? 30 : 20),
+                    // Message de bienvenue personnalisé
+                    Text(
+                      "Bienvenue chez Beko, $userName!",
+                      style: TextStyle(
+                          fontSize: isTablet ? 22 : 18,
+                          fontWeight: FontWeight.w500),
+                    ),
+                    SizedBox(height: isTablet ? 30 : 20),
+                    // Disposition adaptative selon l'orientation
+                    isLandscape && !isTablet
+                        ? Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: _buildAttendanceCard(isTablet),
+                              ),
+                              const SizedBox(width: 20),
+                              Expanded(
+                                child: Align(
+                                  alignment: Alignment.center,
+                                  child: _buildActionButtons(),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            children: [
+                              _buildAttendanceCard(isTablet),
+                              SizedBox(height: isTablet ? 30 : 20),
+                              _buildActionButtons(),
+                            ],
+                          ),
+                  ],
+                ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  // Widget pour la carte d'informations de pointage
+  Widget _buildAttendanceCard(bool isTablet) {
+    return Container(
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: isTablet
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // En-tête de la carte avec date
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.calendar_today, color: Colors.blue),
+                  const SizedBox(width: 5),
+                  const Text("Status d'Aujourd'hui",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Text(todayDate,
+                  style: const TextStyle(fontSize: 14, color: Colors.grey)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // Informations d'entrée et sortie
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.access_time, color: Colors.green),
+                      const SizedBox(width: 5),
+                      const Text("Arrivée", style: TextStyle(fontSize: 14)),
+                    ],
+                  ),
+                  Text(clockInTime,
+                      style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue)),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.access_time, color: Colors.orange),
+                      const SizedBox(width: 5),
+                      const Text("Départ", style: TextStyle(fontSize: 14)),
+                    ],
+                  ),
+                  Text(clockOutTime,
+                      style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 10), // 🔹 Ajout d'un espacement
+          // Information de localisation
+          Row(
+            children: [
+              const Icon(Icons.location_on, color: Colors.red),
+              const SizedBox(width: 5),
+              Flexible(
+                child: Text(
+                  lastLocation.isNotEmpty
+                      ? lastLocation
+                      : "Localisation inconnue",
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w500),
+                  softWrap: true,
+                  overflow: TextOverflow.visible,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Widget pour les boutons d'action
+  Widget _buildActionButtons() {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: handleClockIn,
+            icon: const Icon(Icons.login, color: Colors.white),
+            label: const Text(
+              "Arrivée",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4CAF50), // Vert
+              foregroundColor: Colors.white,
+              elevation: 3,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 15),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: handleClockOut,
+            icon: const Icon(Icons.logout, color: Colors.white),
+            label: const Text(
+              "Départ",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE53935), // Rouge
+              foregroundColor: Colors.white,
+              elevation: 3,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -98,9 +98,9 @@ class ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  /// Gère la sélection et le téléchargement d'une image 
+  /// Gère la sélection et le téléchargement d'une image
   /// depuis la galerie ou la caméra.
-  /// 
+  ///
   /// @param source La source de l'image (galerie ou caméra)
   Future<void> _pickImage(ImageSource source) async {
     bool permissionGranted = false;
@@ -234,15 +234,22 @@ class ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Construction de l'URL complète de l'image de profil
-    String imageUrl = userPhoto.isNotEmpty
-        ? (userPhoto.startsWith('/')
-            ? "http://192.168.1.7:8000$userPhoto" // Le slash est déjà dans userPhoto
-            : "http://192.168.1.7:8000/$userPhoto") // Ajout du slash ici
-        : "";
+    // Modification de la gestion de l'URL de l'image de profil
+    String imageUrl = "";
+    if (userPhoto != "default.png" && userPhoto.isNotEmpty) {
+      imageUrl = userPhoto.startsWith('/')
+          ? "http://192.168.1.7:8000$userPhoto"
+          : "http://192.168.1.7:8000/$userPhoto";
+    }
 
-    // Debugging de l'URL construite
-    print("🖼️ URL de l'image construite: $imageUrl");
+    // Configuration responsive
+    final Size screenSize = MediaQuery.of(context).size;
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    // Ajustement des dimensions
+    final double avatarRadius =
+        isLandscape ? screenSize.height * 0.15 : screenSize.width * 0.15;
 
     return WillPopScope(
       // Intercepter le retour arrière pour retourner l'état de mise à jour
@@ -253,189 +260,233 @@ class ProfilePageState extends State<ProfilePage> {
       child: Scaffold(
         backgroundColor: const Color(0xFFE6F0FA),
         body: SafeArea(
-          child: Stack(
-            children: [
-              // Éléments de design - cercles bleus
-              Positioned(
-                top: -10,
-                left: -85,
-                child: Container(
-                  width: 180,
-                  height: 180,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFB3DAF1),
-                    shape: BoxShape.circle,
+          child: LayoutBuilder(builder: (context, constraints) {
+            return Stack(
+              children: [
+                // Éléments de design - cercles bleus
+                Positioned(
+                  top: -10,
+                  left: -85,
+                  child: Container(
+                    width: 180,
+                    height: 180,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFB3DAF1),
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
-              ),
-              Positioned(
-                top: -100,
-                left: -8,
-                child: Container(
-                  width: 180,
-                  height: 180,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF80C7E8),
-                    shape: BoxShape.circle,
+                Positioned(
+                  top: -100,
+                  left: -8,
+                  child: Container(
+                    width: 180,
+                    height: 180,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF80C7E8),
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
-              ),
-              // Bouton de retour
-              Positioned(
-                top: 10,
-                left: 10,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black),
-                  onPressed: () {
-                    Navigator.pop(context, photoUpdated);
-                  },
+                // Bouton de retour
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
+                    onPressed: () {
+                      Navigator.pop(context, photoUpdated);
+                    },
+                  ),
                 ),
-              ),
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Photo de profil avec bouton d'édition
-                      Stack(
+
+                // Contenu principal avec défilement
+                Center(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 20.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          isUploading
-                              ? CircleAvatar(
-                                  radius: 80,
-                                  backgroundColor: Colors.grey[200],
-                                  child: const CircularProgressIndicator(),
-                                )
-                              : CircleAvatar(
-                                  radius: 80,
-                                  backgroundImage: imageUrl.isNotEmpty
-                                      ? NetworkImage(imageUrl) as ImageProvider
-                                      : null,
-                                  child: imageUrl.isEmpty
-                                      ? Icon(Icons.person,
-                                          size: 80, color: Colors.grey[600])
-                                      : null,
+                          // Photo de profil avec bouton d'édition
+                          Stack(
+                            children: [
+                              isUploading
+                                  ? CircleAvatar(
+                                      radius: avatarRadius,
+                                      backgroundColor: Colors.grey[200],
+                                      child: const CircularProgressIndicator(),
+                                    )
+                                  : CircleAvatar(
+                                      radius: avatarRadius,
+                                      backgroundColor: Colors.grey[200],
+                                      backgroundImage: imageUrl.isNotEmpty
+                                          ? NetworkImage(imageUrl)
+                                              as ImageProvider
+                                          : null,
+                                      child: imageUrl.isEmpty
+                                          ? Icon(Icons.person,
+                                              size: avatarRadius * 0.7,
+                                              color: Colors.grey[600])
+                                          : null,
+                                    ),
+                              // Bouton d'édition de la photo
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: Colors.white, width: 2),
+                                  ),
+                                  child: IconButton(
+                                    onPressed: _showImageSourceOptions,
+                                    icon: const Icon(Icons.edit,
+                                        color: Colors.white, size: 20),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                  ),
                                 ),
-                          // Bouton d'édition de la photo
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                shape: BoxShape.circle,
-                                border:
-                                    Border.all(color: Colors.white, width: 2),
                               ),
-                              child: IconButton(
-                                onPressed: _showImageSourceOptions,
-                                icon: const Icon(Icons.edit,
-                                    color: Colors.white, size: 20),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Disposition adaptative pour les informations utilisateur
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  isLandscape ? screenSize.width * 0.1 : 0,
+                            ),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: isLandscape
+                                    ? screenSize.width * 0.6
+                                    : screenSize.width * 0.9,
+                              ),
+                              child: Column(
+                                children: [
+                                  // Carte avec informations utilisateur
+                                  Card(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    elevation: 5,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 20, horizontal: 16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          // Nom utilisateur
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.person,
+                                                  color: Colors.blue),
+                                              const SizedBox(width: 10),
+                                              Text(
+                                                userName,
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 15),
+                                          // Email utilisateur
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.email,
+                                                  color: Colors.blue),
+                                              const SizedBox(width: 10),
+                                              Text(
+                                                userEmail,
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 15),
+                                          // Rôle utilisateur
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.work,
+                                                  color: Colors.blue),
+                                              const SizedBox(width: 10),
+                                              Text(
+                                                userRole,
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+
+                                  // Bouton de déconnexion
+                                  ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      maxWidth: isLandscape
+                                          ? screenSize.width * 0.4
+                                          : screenSize.width * 0.6,
+                                    ),
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        // Suppression des données utilisateur lors de la déconnexion
+                                        await StorageService.removeToken();
+                                        await StorageService.clearUserData();
+                                        await StorageService.clearStorage();
+
+                                        if (context.mounted) {
+                                          // Redirection vers l'écran de connexion
+                                          Navigator.pushNamedAndRemoveUntil(
+                                              context,
+                                              '/login',
+                                              (route) => false);
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 12, horizontal: 24),
+                                      ),
+                                      child: const Text(
+                                        "Déconnexion",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
-                      // Carte avec informations utilisateur
-                      Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        elevation: 5,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 20, horizontal: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Nom utilisateur
-                              Row(
-                                children: [
-                                  const Icon(Icons.person, color: Colors.blue),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    userName,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 15),
-                              // Email utilisateur
-                              Row(
-                                children: [
-                                  const Icon(Icons.email, color: Colors.blue),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    userEmail,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 15),
-                              // Rôle utilisateur
-                              Row(
-                                children: [
-                                  const Icon(Icons.work, color: Colors.blue),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    userRole,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      // Bouton de déconnexion
-                      ElevatedButton(
-                        onPressed: () async {
-                          // Suppression des données utilisateur lors de la déconnexion
-                          await StorageService.removeToken();
-                          await StorageService.clearUserData();
-                          await StorageService.clearStorage();
-
-                          if (context.mounted) {
-                            // Redirection vers l'écran de connexion
-                            Navigator.pushNamedAndRemoveUntil(
-                                context, '/login', (route) => false);
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 24),
-                        ),
-                        child: const Text(
-                          "Déconnexion",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            );
+          }),
         ),
       ),
     );

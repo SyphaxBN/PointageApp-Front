@@ -146,121 +146,145 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Récupération des dimensions et orientation de l'écran
+    final Size screenSize = MediaQuery.of(context).size;
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    // Ajustement des dimensions en fonction de l'orientation
+    final double horizontalPadding = screenSize.width * 0.05;
+    final double illustrationHeight =
+        isLandscape ? screenSize.height * 0.3 : screenSize.height * 0.2;
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFE6F0FA),
-      body: Stack(
-        children: [
-          // Éléments de design - cercles bleus
-          Positioned(
-            top: -10,
-            left: -85,
-            child: Container(
-              width: 180,
-              height: 180,
-              decoration: const BoxDecoration(
-                color: Color(0xFFB3DAF1),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Positioned(
-            top: -100,
-            left: -8,
-            child: Container(
-              width: 180,
-              height: 180,
-              decoration: const BoxDecoration(
-                color: Color(0xFF80C7E8),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Illustration SVG
-                      SvgPicture.asset(
-                        "assets/images/signup.svg",
-                        height: 180,
-                      ),
-                      const SizedBox(height: 20),
-                      // Titre de la page
-                      const Text(
-                        "Créer un compte",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      // Champ de saisie pour l'email
-                      buildTextField(
-                          emailController, "Adresse e-mail", Icons.email),
-                      const SizedBox(height: 10),
-                      // Champ de saisie pour le nom
-                      buildTextField(nameController, "Nom", Icons.person),
-                      const SizedBox(height: 10),
-                      // Champ de saisie pour le mot de passe
-                      buildTextField(
-                          passwordController, "Mot de passe", Icons.lock,
-                          isPassword: true),
-                      const SizedBox(height: 20),
-                      const SizedBox(height: 10),
-                      // Bouton d'inscription
-                      ElevatedButton(
-                        onPressed: isLoading ? null : _register,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF007BFF),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          minimumSize: const Size(double.infinity, 55),
-                        ),
-                        child: isLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white)
-                            : const Text(
-                                "S'inscrire",
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 18),
-                              ),
-                      ),
-                      // Lien vers la page de connexion
-                      TextButton(
-                        onPressed: _navigateToLogin,
-                        child: RichText(
-                          text: const TextSpan(
-                            text: "Vous avez déjà un compte ? ",
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.normal,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: "Se connecter.",
-                                style: TextStyle(
-                                  color: Color(0xFF007BFF),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+      body: SafeArea(
+        child: LayoutBuilder(builder: (context, constraints) {
+          return Stack(
+            children: [
+              // Éléments de design - cercles bleus
+              Positioned(
+                top: -10,
+                left: -85,
+                child: Container(
+                  width: 180,
+                  height: 180,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFB3DAF1),
+                    shape: BoxShape.circle,
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
+              Positioned(
+                top: -100,
+                left: -8,
+                child: Container(
+                  width: 180,
+                  height: 180,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF80C7E8),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+              Center(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding, vertical: 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Illustration SVG avec hauteur adaptative
+                        SvgPicture.asset(
+                          "assets/images/signup.svg",
+                          height: illustrationHeight,
+                          fit: BoxFit.contain,
+                        ),
+                        const SizedBox(height: 20),
+                        // Titre de la page
+                        const Text(
+                          "Créer un compte",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        // Champs de saisie (en utilisant Flexible pour s'adapter)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: buildTextField(
+                              emailController, "Adresse e-mail", Icons.email),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: buildTextField(
+                              nameController, "Nom", Icons.person),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: buildTextField(
+                              passwordController, "Mot de passe", Icons.lock,
+                              isPassword: true),
+                        ),
+                        const SizedBox(height: 20),
+                        // Bouton d'inscription
+                        Container(
+                          width: isLandscape
+                              ? screenSize.width * 0.5
+                              : double.infinity,
+                          child: ElevatedButton(
+                            onPressed: isLoading ? null : _register,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF007BFF),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              minimumSize: const Size(double.infinity, 55),
+                            ),
+                            child: isLoading
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white)
+                                : const Text(
+                                    "S'inscrire",
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 18),
+                                  ),
+                          ),
+                        ),
+                        // Lien vers la page de connexion
+                        TextButton(
+                          onPressed: _navigateToLogin,
+                          child: RichText(
+                            text: const TextSpan(
+                              text: "Vous avez déjà un compte ? ",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.normal,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: "Se connecter.",
+                                  style: TextStyle(
+                                    color: Color(0xFF007BFF),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }),
       ),
     );
   }
